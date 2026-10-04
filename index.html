@@ -114,8 +114,7 @@ input.code-input{ font-size:1.4rem; letter-spacing:.3em; text-align:center; text
 #plat-blocks{position:absolute; left:0; top:0; width:100%; height:100%;}
 #plat .pbook{pointer-events:none;}
 #plat .pcrack{pointer-events:none;}
-#plat .psecret{background:#15172a; opacity:0; transition:opacity .8s ease; pointer-events:none; border-radius:8px; position:relative;}
-#plat .psecret::after{content:''; position:absolute; inset:0; background:url('data:image/svg+xml,<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><g stroke="rgba(88,101,242,.4)" stroke-width="2" fill="none"><rect x="20" y="20" width="60" height="60"/><rect x="30" y="30" width="40" height="40"/><circle cx="50" cy="50" r="5" fill="rgba(88,101,242,.4)"/></g></svg>'); background-repeat:no-repeat; background-position:center; background-size:25%; pointer-events:none;}
+#plat .psecret{opacity:0; transition:opacity .8s ease; pointer-events:none;}
 #plat .psecret.show{opacity:1;}
 #plat .pkeyhint{left:0; top:0; border:2px solid #f2f2f7; background:rgba(20,22,40,.92); border-radius:6px; display:flex; align-items:center; justify-content:center; opacity:0; transition:opacity .15s ease; pointer-events:none; will-change:transform;}
 #plat .pkeyhint.show{opacity:1;}
@@ -1513,7 +1512,7 @@ let pfLevel = 1, pfH = 8, pfLedge = [0,2,5,6], pfExit = [1.5,1,3.5,2], pfTrans =
 function pfSetLevel(n){ pfLevel = n; pfH = n === 1 ? 8 : 13; pfLedge = [0, 2, 5, pfH - 2]; pfExit = [1.5, 1, 3.5, 2]; }
 let pf = null, pfIn = {l:0,r:0,u:0}, pfBoard = null, pfSolid = [pfLedge];
 let pfStarted = false, pfActive = false, pfT = 50, pfEl = null, pfLoopId = 0, pfLast = 0, pfAcc = 0;
-const PF_SECRET = [[0,1,5,2],[0,2,1,4],[4,3,5,4],[0,4,5,10]], PF_CAVITY = [[4,2,5,3],[1,2,4,4]]; // level 2 ledge pieces around the hidden entrance + room
+const PF_SECRET = [[0,2,5,3],[0,3,1,5],[4,4,5,5],[0,5,5,11]], PF_CAVITY = [[4,3,5,4],[1,3,4,5]]; // level 2 ledge pieces around the hidden entrance + room
 let pfSecretEls = [], pfSecretSeen = false;
 let pfPaperEl = null, pfPaperOpen = false, pfUPrev = false, pfUHold = false, pfHint = null, pfHintS = 0;
 const PF_BOOK_X = .44; // book centre (in tiles) on the floor of level 2
@@ -1558,8 +1557,15 @@ function pfPaperBuild(){
   [['W', 174, 90, -1.5], ['A', 60, 204, 1.2], ['S', 174, 204, -.8], ['D', 288, 204, 1.6]].forEach(([ch, x, y, r]) => { g += box(x, y, K, K, r, at(x + K/2, y + (K-10)/2, 0, GL[ch])); });
   [[0, 626, 90, 1], [270, 512, 204, -1.4], [180, 626, 204, .8], [90, 740, 204, -1.1]].forEach(([d, x, y, r]) => { g += box(x, y, K, K, r, at(x + K/2, y + (K-10)/2, d, arrow())); });
   const ex = 330, ey = 370, ew = 240, eh = 100, ax = ex + ew - 50, ay = ey + 26;
+  const yb = ey + 62, top = yb - 34, xh = yb - 21;
+  const E1 = x => pass([[x+20,top],[x,top+1],[x,yb],[x+20,yb-1]]) + pass([[x+1,top+16],[x+16,top+17]]);
+  const En = x => pass([[x,xh],[x,yb]]) + pass([[x,xh+7],[x+5,xh+1],[x+13,xh],[x+18,xh+7],[x+18,yb]]);
+  const Et = x => pass([[x+6,yb-30],[x+6,yb-5],[x+9,yb],[x+15,yb-2]]) + pass([[x,xh],[x+14,xh-1]]);
+  const Ee = x => pass([[x,yb-10],[x+18,yb-11]]) + pass([[x+18,yb-11],[x+17,xh+6],[x+12,xh],[x+5,xh],[x,xh+6],[x,yb-6],[x+5,yb],[x+15,yb-1]]);
+  const Er = x => pass([[x,xh],[x,yb]]) + pass([[x,xh+8],[x+5,xh+1],[x+13,xh]]);
+  const enterTxt = E1(ex + 36) + En(ex + 63) + Et(ex + 90) + Ee(ex + 110) + Er(ex + 136);
   g += box(ex, ey, ew, eh, -.9,
-    `<text x="${ex + 100}" y="${ey + (eh-10)/2}" text-anchor="middle" dominant-baseline="central" font-family="${font}" font-size="38" font-weight="700" fill="${ink}" fill-opacity=".8" stroke="${ink}" stroke-width=".6">Enter</text>` +
+    enterTxt +
     pass([[ax, ay], [ax, ay + 24], [ax - 34, ay + 24]]) + pass([[ax - 24, ay + 14], [ax - 34, ay + 24], [ax - 24, ay + 34]]));
   const defs = `<defs>
     <linearGradient id="pf-pg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f6efdc"/><stop offset="1" stop-color="#eadfc2"/></linearGradient>
@@ -1614,6 +1620,26 @@ function pfRespawn(){
   pfDraw();
   pfEl.classList.remove('respawn'); void pfEl.offsetWidth; pfEl.classList.add('respawn');
 }
+function pfCaveSvg(){ // 4x2 tiles at 100 units/tile: the 3x2 room (x 0-300) plus the 1-tile entrance (x 300-400, y 0-100)
+  let sd = 11; const rnd = () => { sd = (sd * 16807) % 2147483647; return (sd - 1) / 2147483646; };
+  const outline = 'M28 0H400V100H300V172Q300 200 272 200H28Q0 200 0 172V28Q0 0 28 0Z';
+  let d = '';
+  for(let i = 0; i < 9; i++){ // rock patches
+    const cx = 20 + rnd() * 360, cy = 15 + rnd() * 170, r = 16 + rnd() * 26, n = 7, pts = [];
+    for(let k = 0; k < n; k++){ const a = k / n * Math.PI * 2, rr = r * (.6 + rnd() * .6); pts.push((cx + Math.cos(a) * rr).toFixed(1) + ' ' + (cy + Math.sin(a) * rr * .75).toFixed(1)); }
+    d += `<path d="M${pts.join('L')}Z" fill="${i % 2 ? '#1f2340' : '#12142a'}" opacity=".55"/>`;
+  }
+  for(let i = 0; i < 70; i++){ // grit
+    const x = 6 + rnd() * 388, y = 5 + rnd() * 190;
+    if(x > 110 && x < 190 && y > 60 && y < 140) continue;
+    d += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${(.8 + rnd() * 1.6).toFixed(1)}" fill="${rnd() < .5 ? '#2a2f52' : '#0c0d1a'}" opacity=".6"/>`;
+  }
+  d += '<path d="M60 0L70 22L62 40M240 0L231 18L240 34M20 200L34 176L26 160M280 200L270 182L284 166M345 100L352 78L344 62" fill="none" stroke="#0c0d1a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity=".7"/>';
+  let sym = ''; const P = 12, ox = 150 - P * 2.5, oy = 100 - P * 2.5; // 5x5 engraved symbol: full border + centre pixel, centred on the 3x2 room
+  for(let r = 0; r < 5; r++) for(let c = 0; c < 5; c++) if(r === 0 || r === 4 || c === 0 || c === 4 || (r === 2 && c === 2)) sym += `<rect x="${ox + c * P}" y="${oy + r * P}" width="${P}" height="${P}"/>`;
+  return `<svg viewBox="0 0 400 200" width="100%" height="100%"><defs><clipPath id="pf-cv-c"><path d="${outline}"/></clipPath><radialGradient id="pf-cv-g" cx="37%" cy="50%" r="60%"><stop offset="0" stop-color="#1e2240"/><stop offset="1" stop-color="#14162a"/></radialGradient><filter id="pf-cv-b" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="9"/></filter></defs>` +
+    `<path d="${outline}" fill="url(#pf-cv-g)"/><g clip-path="url(#pf-cv-c)">${d}<path d="${outline}" fill="none" stroke="#080914" stroke-width="22" opacity=".7" filter="url(#pf-cv-b)"/><g fill="#0a0b17" opacity=".9">${sym}</g></g></svg>`;
+}
 // (Re)draws everything inside the arena for the current pfLevel
 function pfBuildScene(){
   const T = pfT, inner = $('plat-inner'); inner.innerHTML = ''; pfHint = null; pfSecretEls = [];
@@ -1622,8 +1648,8 @@ function pfBuildScene(){
   pfMk('pledge', pfLedge[0]*T, pfLedge[1]*T, (pfLedge[2]-pfLedge[0])*T, (pfLedge[3]-pfLedge[1])*T);
   if(pfLevel === 2){ // hidden room inside the ledge, only hinted at by a faint crack
     const ck = pfMk('pcrack', 4.86*T, 3.3*T, T*.1, T*.4);
-    ck.innerHTML = '<svg viewBox="0 0 10 40" width="100%" height="100%" preserveAspectRatio="none"><path d="M5 0L3 9L6 17L2 27L4 40" fill="none" stroke="rgba(6,7,18,.067)" stroke-width="1" vector-effect="non-scaling-stroke" stroke-linecap="round"/></svg>';
-    pfSecretEls = PF_CAVITY.map(r => pfMk('psecret', r[0]*T, r[1]*T, (r[2]-r[0])*T, (r[3]-r[1])*T));
+    ck.innerHTML = '<svg viewBox="0 0 10 40" width="100%" height="100%" preserveAspectRatio="none"><path d="M5 0L3 9L6 17L2 27L4 40" fill="none" stroke="rgba(6,7,18,.1)" stroke-width="1" vector-effect="non-scaling-stroke" stroke-linecap="round"/></svg>';
+    const cv = pfMk('psecret', 1*T, 3*T, 4*T, 2*T); cv.innerHTML = pfCaveSvg(); pfSecretEls = [cv];
     pfSecretSeen = false;
   }
   const ex = pfMk('pexit', pfExit[0]*T, pfExit[1]*T, (pfExit[2]-pfExit[0])*T, (pfExit[3]-pfExit[1])*T);
@@ -1632,7 +1658,7 @@ function pfBuildScene(){
   pfMk('pceil', 0, 0, PF_N*T, T*.6);
   if(pfLevel === 2){ // a book dropped in the bottom left corner
     const bw = T * .525, bh = bw * 20 / 64;
-    const bk = pfMk('pbook', .18 * T, pfH * T - bh - T * 0.15, bw, bh);
+    const bk = pfMk('pbook', .18 * T, pfH * T - bh - T * .05, bw, bh);
     bk.innerHTML = '<svg viewBox="0 0 64 20" width="100%" height="100%"><rect x="0" y="2" width="6" height="17" rx="2.5" fill="#7a2634"/><rect x="3" y="14" width="60" height="5" rx="1.5" fill="#8b2f3c"/><rect x="7" y="7" width="55" height="7.5" fill="#f3ead2"/><path d="M9 9.5H60M9 12H58" stroke="#cfc3a2" stroke-width=".7"/><rect x="2" y="2" width="59" height="5.5" rx="1.5" fill="#a63a4a"/><rect x="13" y="3.7" width="30" height="1.5" fill="#e8c46a" opacity=".85"/><rect x="56" y="14" width="2.4" height="5.5" fill="#e8c46a"/></svg>';
   }
   pfEl = pfMk('pplayer', 0, 0, PF_S*T, PF_S*T);
@@ -1640,7 +1666,7 @@ function pfBuildScene(){
   if(pfLevel === 2){ // "press up" prompt shown above the cube while it is next to the book
     pfHintS = Math.round(T * .62);
     pfHint = pfMk('pkeyhint', 0, 0, pfHintS, pfHintS);
-    pfHint.innerHTML = '<svg viewBox="0 0 24 24" width="100%" height="100%"><line x1="12" y1="19" x2="12" y2="5" stroke="#f2f2f7" stroke-width="2" stroke-linecap="round"/><line x1="5" y1="12" x2="12" y2="5" stroke="#f2f2f7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><line x1="19" y1="12" x2="12" y2="5" stroke="#f2f2f7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    pfHint.innerHTML = '<svg viewBox="0 0 24 24" width="60%" height="60%"><path d="M5 15l7-7 7 7" fill="none" stroke="#f2f2f7" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>';
   }
   pf = {x:2.1, y:pfH - PF_S, vx:0, vy:0, grounded:true};
   pfComputeSolid(); pfDrawBlocks(); pfDraw();
@@ -1676,9 +1702,7 @@ function pfDraw(){
   pfEl.style.transform = `translate(${pf.x * pfT}px,${pf.y * pfT}px)`;
   if(pfSecretEls.length){
     const cx = pf.x + PF_S / 2, cy = pf.y + PF_S / 2;
-    const inSecret = PF_CAVITY.some(r => cx > r[0] && cx < r[2] && cy > r[1] && cy < r[3]);
-    if(inSecret && !pfSecretSeen){ pfSecretSeen = true; pfSecretEls.forEach(e => e.classList.add('show')); }
-    if(!inSecret && pfSecretSeen){ pfSecretSeen = false; pfSecretEls.forEach(e => e.classList.remove('show')); }
+    if(PF_CAVITY.some(r => cx > r[0] && cx < r[2] && cy > r[1] && cy < r[3])){ pfSecretSeen = true; pfSecretEls.forEach(e => e.classList.add('show')); } else pfSecretEls.forEach(e => e.classList.remove('show'));
   }
   if(pfHint){
     pfHint.style.transform = `translate(${pf.x * pfT + PF_S * pfT / 2 - pfHintS / 2}px,${pf.y * pfT - pfHintS - pfT * .15}px)`;
