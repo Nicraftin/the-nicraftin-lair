@@ -1624,21 +1624,16 @@ function pfCaveSvg(){ // 4x2 tiles at 100 units/tile: the 3x2 room (x 0-300) plu
   let sd = 11; const rnd = () => { sd = (sd * 16807) % 2147483647; return (sd - 1) / 2147483646; };
   const outline = 'M28 0H400V100H300V172Q300 200 272 200H28Q0 200 0 172V28Q0 0 28 0Z';
   let d = '';
-  for(let i = 0; i < 9; i++){ // rock patches
-    const cx = 20 + rnd() * 360, cy = 15 + rnd() * 170, r = 16 + rnd() * 26, n = 7, pts = [];
-    for(let k = 0; k < n; k++){ const a = k / n * Math.PI * 2, rr = r * (.6 + rnd() * .6); pts.push((cx + Math.cos(a) * rr).toFixed(1) + ' ' + (cy + Math.sin(a) * rr * .75).toFixed(1)); }
-    d += `<path d="M${pts.join('L')}Z" fill="${i % 2 ? '#1f2340' : '#12142a'}" opacity=".55"/>`;
-  }
   for(let i = 0; i < 70; i++){ // grit
     const x = 6 + rnd() * 388, y = 5 + rnd() * 190;
     if(x > 110 && x < 190 && y > 60 && y < 140) continue;
     d += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${(.8 + rnd() * 1.6).toFixed(1)}" fill="${rnd() < .5 ? '#2a2f52' : '#0c0d1a'}" opacity=".6"/>`;
   }
   d += '<path d="M60 0L70 22L62 40M240 0L231 18L240 34M20 200L34 176L26 160M280 200L270 182L284 166M345 100L352 78L344 62" fill="none" stroke="#0c0d1a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity=".7"/>';
-  let sym = ''; const P = 12, ox = 150 - P * 2.5, oy = 100 - P * 2.5; // 5x5 engraved symbol: full border + centre pixel, centred on the 3x2 room
-  for(let r = 0; r < 5; r++) for(let c = 0; c < 5; c++) if(r === 0 || r === 4 || c === 0 || c === 4 || (r === 2 && c === 2)) sym += `<rect x="${ox + c * P}" y="${oy + r * P}" width="${P}" height="${P}"/>`;
+  const P = 24, ox = 150 - P * 2.5, oy = 100 - P * 2.5; // 5x5 engraved symbol: full border + centre pixel, centred on the 3x2 room, one seamless path
+  const sym = `<path fill-rule="evenodd" d="M${ox} ${oy}h${P*5}v${P*5}h${-P*5}ZM${ox+P} ${oy+P}v${P*3}h${P*3}v${-P*3}ZM${ox+P*2} ${oy+P*2}h${P}v${P}h${-P}Z"/>`;
   return `<svg viewBox="0 0 400 200" width="100%" height="100%"><defs><clipPath id="pf-cv-c"><path d="${outline}"/></clipPath><radialGradient id="pf-cv-g" cx="37%" cy="50%" r="60%"><stop offset="0" stop-color="#1e2240"/><stop offset="1" stop-color="#14162a"/></radialGradient><filter id="pf-cv-b" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="9"/></filter></defs>` +
-    `<path d="${outline}" fill="url(#pf-cv-g)"/><g clip-path="url(#pf-cv-c)">${d}<path d="${outline}" fill="none" stroke="#080914" stroke-width="22" opacity=".7" filter="url(#pf-cv-b)"/><g fill="#0a0b17" opacity=".9">${sym}</g></g></svg>`;
+    `<path d="${outline}" fill="#1e2240"/><g clip-path="url(#pf-cv-c)">${d}<g fill="#0a0b17" opacity=".45">${sym}</g></g></svg>`;
 }
 // (Re)draws everything inside the arena for the current pfLevel
 function pfBuildScene(){
@@ -1713,6 +1708,7 @@ let pfStepT = 0;
 function pfStep(){
   const s = pf, wasG = s.grounded;
   s.vx = (pfIn.r - pfIn.l) * PF_SPEED;
+  if(pfPaperOpen && (pfIn.l || pfIn.r)) pfSetPaper(false);
   if(pfIn.u && !pfUPrev){ if(pfPaperOpen){ pfSetPaper(false); pfUHold = true; } else if(pfNearBook()){ pfSetPaper(true); pfUHold = true; } }
   pfUPrev = !!pfIn.u; if(!pfIn.u) pfUHold = false;
   if(pfIn.u && s.grounded && !pfUHold){ s.vy = -PF_JUMP; SFX.jump(); }
