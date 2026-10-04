@@ -94,7 +94,7 @@ input.code-input{ font-size:1.4rem; letter-spacing:.3em; text-align:center; text
   background-image:linear-gradient(180deg, #2b2f52, #1b1c2d);
   background-size:100% 100%;}
 #plat .pledge::before{content:''; position:absolute; left:0; right:0; top:0; height:5px; background:linear-gradient(90deg,#5865f2,#8f99ff);}
-#plat .pfloor{background:#2c2f4f; background-image:none; box-shadow:none;}
+#plat .pfloor{background:#2c2f4f; background-image:none; box-shadow:none; border-radius:0 0 8px 8px;}
 #plat .pfloor::before{display:none;}
 #plat .pceil{background:linear-gradient(rgba(0,0,0,.5), transparent); pointer-events:none;}
 @keyframes exitFlash{ 0%{filter:brightness(1);} 45%{filter:brightness(1.7); box-shadow:0 0 0 3px #b6ffd8, 0 0 34px 12px rgba(61,220,151,.95), inset 0 0 14px rgba(0,0,0,.35);} 100%{filter:brightness(1);} }
@@ -114,7 +114,8 @@ input.code-input{ font-size:1.4rem; letter-spacing:.3em; text-align:center; text
 #plat-blocks{position:absolute; left:0; top:0; width:100%; height:100%;}
 #plat .pbook{pointer-events:none;}
 #plat .pcrack{pointer-events:none;}
-#plat .psecret{background:#0e0f1c; opacity:0; transition:opacity .8s ease; pointer-events:none;}
+#plat .psecret{background:#15172a; background-image:linear-gradient(90deg, rgba(255,255,255,.05) 1px, transparent 1px), linear-gradient(rgba(255,255,255,.05) 1px, transparent 1px); background-size:8px 8px; opacity:0; transition:opacity .8s ease; pointer-events:none; position:relative;}
+#plat .psecret::before{content:''; position:absolute; inset:0; background-image:url('data:image/svg+xml,<svg viewBox="0 0 5 5" xmlns="http://www.w3.org/2000/svg"><rect x="0" y="0" width="5" height="5" fill="none" stroke="rgba(88,101,242,.3)" stroke-width="0.4"/><rect x="1" y="1" width="3" height="3" fill="none" stroke="rgba(88,101,242,.2)" stroke-width="0.4"/><rect x="2" y="2" width="1" height="1" fill="rgba(88,101,242,.25)"/></svg>'); background-repeat:repeat; background-size:60px 60px; opacity:.6; pointer-events:none;}
 #plat .psecret.show{opacity:1;}
 #plat .pkeyhint{left:0; top:0; border:2px solid #f2f2f7; background:rgba(20,22,40,.92); border-radius:6px; display:flex; align-items:center; justify-content:center; opacity:0; transition:opacity .15s ease; pointer-events:none; will-change:transform;}
 #plat .pkeyhint.show{opacity:1;}
@@ -1621,7 +1622,7 @@ function pfBuildScene(){
   pfMk('pledge', pfLedge[0]*T, pfLedge[1]*T, (pfLedge[2]-pfLedge[0])*T, (pfLedge[3]-pfLedge[1])*T);
   if(pfLevel === 2){ // hidden room inside the ledge, only hinted at by a faint crack
     const ck = pfMk('pcrack', 4.86*T, 3.3*T, T*.1, T*.4);
-    ck.innerHTML = '<svg viewBox="0 0 10 40" width="100%" height="100%" preserveAspectRatio="none"><path d="M5 0L3 9L6 17L2 27L4 40" fill="none" stroke="rgba(6,7,18,.2)" stroke-width="1" vector-effect="non-scaling-stroke" stroke-linecap="round"/></svg>';
+    ck.innerHTML = '<svg viewBox="0 0 10 40" width="100%" height="100%" preserveAspectRatio="none"><path d="M5 0L3 9L6 17L2 27L4 40" fill="none" stroke="rgba(6,7,18,.067)" stroke-width="1" vector-effect="non-scaling-stroke" stroke-linecap="round"/></svg>';
     pfSecretEls = PF_CAVITY.map(r => pfMk('psecret', r[0]*T, r[1]*T, (r[2]-r[0])*T, (r[3]-r[1])*T));
     pfSecretSeen = false;
   }
@@ -1631,7 +1632,7 @@ function pfBuildScene(){
   pfMk('pceil', 0, 0, PF_N*T, T*.6);
   if(pfLevel === 2){ // a book dropped in the bottom left corner
     const bw = T * .525, bh = bw * 20 / 64;
-    const bk = pfMk('pbook', .18 * T, pfH * T - bh, bw, bh);
+    const bk = pfMk('pbook', .18 * T, pfH * T - bh - T * 0.15, bw, bh);
     bk.innerHTML = '<svg viewBox="0 0 64 20" width="100%" height="100%"><rect x="0" y="2" width="6" height="17" rx="2.5" fill="#7a2634"/><rect x="3" y="14" width="60" height="5" rx="1.5" fill="#8b2f3c"/><rect x="7" y="7" width="55" height="7.5" fill="#f3ead2"/><path d="M9 9.5H60M9 12H58" stroke="#cfc3a2" stroke-width=".7"/><rect x="2" y="2" width="59" height="5.5" rx="1.5" fill="#a63a4a"/><rect x="13" y="3.7" width="30" height="1.5" fill="#e8c46a" opacity=".85"/><rect x="56" y="14" width="2.4" height="5.5" fill="#e8c46a"/></svg>';
   }
   pfEl = pfMk('pplayer', 0, 0, PF_S*T, PF_S*T);
@@ -1639,7 +1640,7 @@ function pfBuildScene(){
   if(pfLevel === 2){ // "press up" prompt shown above the cube while it is next to the book
     pfHintS = Math.round(T * .62);
     pfHint = pfMk('pkeyhint', 0, 0, pfHintS, pfHintS);
-    pfHint.innerHTML = '<svg viewBox="0 0 24 24" width="60%" height="60%"><path d="M5 15l7-7 7 7" fill="none" stroke="#f2f2f7" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    pfHint.innerHTML = '<svg viewBox="0 0 24 24" width="100%" height="100%"><text x="12" y="16" text-anchor="middle" font-size="18" font-family="system-ui,-apple-system,sans-serif" font-weight="600" fill="#f2f2f7">↑</text></svg>';
   }
   pf = {x:2.1, y:pfH - PF_S, vx:0, vy:0, grounded:true};
   pfComputeSolid(); pfDrawBlocks(); pfDraw();
@@ -1673,9 +1674,11 @@ function pfNextLevel(){
 }
 function pfDraw(){
   pfEl.style.transform = `translate(${pf.x * pfT}px,${pf.y * pfT}px)`;
-  if(pfSecretEls.length && !pfSecretSeen){
+  if(pfSecretEls.length){
     const cx = pf.x + PF_S / 2, cy = pf.y + PF_S / 2;
-    if(PF_CAVITY.some(r => cx > r[0] && cx < r[2] && cy > r[1] && cy < r[3])){ pfSecretSeen = true; pfSecretEls.forEach(e => e.classList.add('show')); }
+    const inSecret = PF_CAVITY.some(r => cx > r[0] && cx < r[2] && cy > r[1] && cy < r[3]);
+    if(inSecret && !pfSecretSeen){ pfSecretSeen = true; pfSecretEls.forEach(e => e.classList.add('show')); }
+    if(!inSecret && pfSecretSeen){ pfSecretSeen = false; pfSecretEls.forEach(e => e.classList.remove('show')); }
   }
   if(pfHint){
     pfHint.style.transform = `translate(${pf.x * pfT + PF_S * pfT / 2 - pfHintS / 2}px,${pf.y * pfT - pfHintS - pfT * .15}px)`;
