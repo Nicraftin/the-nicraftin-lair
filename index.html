@@ -94,7 +94,7 @@ input.code-input{ font-size:1.4rem; letter-spacing:.3em; text-align:center; text
   background-image:linear-gradient(180deg, #2b2f52, #1b1c2d);
   background-size:100% 100%;}
 #plat .pledge::before{content:''; position:absolute; left:0; right:0; top:0; height:5px; background:linear-gradient(90deg,#5865f2,#8f99ff);}
-#plat .pfloor{background:#2c2f4f; background-image:none; box-shadow:none; border-radius:0 0 8px 8px;}
+#plat .pfloor{background:#2c2f4f; background-image:none; box-shadow:none;}
 #plat .pfloor::before{display:none;}
 #plat .pceil{background:linear-gradient(rgba(0,0,0,.5), transparent); pointer-events:none;}
 @keyframes exitFlash{ 0%{filter:brightness(1);} 45%{filter:brightness(1.7); box-shadow:0 0 0 3px #b6ffd8, 0 0 34px 12px rgba(61,220,151,.95), inset 0 0 14px rgba(0,0,0,.35);} 100%{filter:brightness(1);} }
@@ -114,8 +114,8 @@ input.code-input{ font-size:1.4rem; letter-spacing:.3em; text-align:center; text
 #plat-blocks{position:absolute; left:0; top:0; width:100%; height:100%;}
 #plat .pbook{pointer-events:none;}
 #plat .pcrack{pointer-events:none;}
-#plat .psecret{background:#15172a; background-image:linear-gradient(90deg, rgba(255,255,255,.05) 1px, transparent 1px), linear-gradient(rgba(255,255,255,.05) 1px, transparent 1px); background-size:8px 8px; opacity:0; transition:opacity .8s ease; pointer-events:none; position:relative;}
-#plat .psecret::before{content:''; position:absolute; inset:0; background-image:url('data:image/svg+xml,<svg viewBox="0 0 5 5" xmlns="http://www.w3.org/2000/svg"><rect x="0" y="0" width="5" height="5" fill="none" stroke="rgba(88,101,242,.3)" stroke-width="0.4"/><rect x="1" y="1" width="3" height="3" fill="none" stroke="rgba(88,101,242,.2)" stroke-width="0.4"/><rect x="2" y="2" width="1" height="1" fill="rgba(88,101,242,.25)"/></svg>'); background-repeat:repeat; background-size:60px 60px; opacity:.6; pointer-events:none;}
+#plat .psecret{background:#15172a; opacity:0; transition:opacity .8s ease; pointer-events:none; border-radius:8px; position:relative;}
+#plat .psecret::after{content:''; position:absolute; inset:0; background:url('data:image/svg+xml,<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><g stroke="rgba(88,101,242,.4)" stroke-width="2" fill="none"><rect x="20" y="20" width="60" height="60"/><rect x="30" y="30" width="40" height="40"/><circle cx="50" cy="50" r="5" fill="rgba(88,101,242,.4)"/></g></svg>'); background-repeat:no-repeat; background-position:center; background-size:25%; pointer-events:none;}
 #plat .psecret.show{opacity:1;}
 #plat .pkeyhint{left:0; top:0; border:2px solid #f2f2f7; background:rgba(20,22,40,.92); border-radius:6px; display:flex; align-items:center; justify-content:center; opacity:0; transition:opacity .15s ease; pointer-events:none; will-change:transform;}
 #plat .pkeyhint.show{opacity:1;}
@@ -1513,7 +1513,7 @@ let pfLevel = 1, pfH = 8, pfLedge = [0,2,5,6], pfExit = [1.5,1,3.5,2], pfTrans =
 function pfSetLevel(n){ pfLevel = n; pfH = n === 1 ? 8 : 13; pfLedge = [0, 2, 5, pfH - 2]; pfExit = [1.5, 1, 3.5, 2]; }
 let pf = null, pfIn = {l:0,r:0,u:0}, pfBoard = null, pfSolid = [pfLedge];
 let pfStarted = false, pfActive = false, pfT = 50, pfEl = null, pfLoopId = 0, pfLast = 0, pfAcc = 0;
-const PF_SECRET = [[0,2,5,3],[0,3,1,5],[4,4,5,5],[0,5,5,11]], PF_CAVITY = [[4,3,5,4],[1,3,4,5]]; // level 2 ledge pieces around the hidden entrance + room
+const PF_SECRET = [[0,1,5,2],[0,2,1,4],[4,3,5,4],[0,4,5,10]], PF_CAVITY = [[4,2,5,3],[1,2,4,4]]; // level 2 ledge pieces around the hidden entrance + room
 let pfSecretEls = [], pfSecretSeen = false;
 let pfPaperEl = null, pfPaperOpen = false, pfUPrev = false, pfUHold = false, pfHint = null, pfHintS = 0;
 const PF_BOOK_X = .44; // book centre (in tiles) on the floor of level 2
@@ -1640,7 +1640,7 @@ function pfBuildScene(){
   if(pfLevel === 2){ // "press up" prompt shown above the cube while it is next to the book
     pfHintS = Math.round(T * .62);
     pfHint = pfMk('pkeyhint', 0, 0, pfHintS, pfHintS);
-    pfHint.innerHTML = '<svg viewBox="0 0 24 24" width="100%" height="100%"><text x="12" y="16" text-anchor="middle" font-size="18" font-family="system-ui,-apple-system,sans-serif" font-weight="600" fill="#f2f2f7">↑</text></svg>';
+    pfHint.innerHTML = '<svg viewBox="0 0 24 24" width="100%" height="100%"><line x1="12" y1="19" x2="12" y2="5" stroke="#f2f2f7" stroke-width="2" stroke-linecap="round"/><line x1="5" y1="12" x2="12" y2="5" stroke="#f2f2f7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><line x1="19" y1="12" x2="12" y2="5" stroke="#f2f2f7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
   }
   pf = {x:2.1, y:pfH - PF_S, vx:0, vy:0, grounded:true};
   pfComputeSolid(); pfDrawBlocks(); pfDraw();
