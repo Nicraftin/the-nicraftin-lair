@@ -312,12 +312,12 @@ With that being said, I hope you enjoy it. Good luck!</p>
 </div>
 
 <div id="screen-game1" class="screen">
-  <div id="space-section-1" class="reveal"><div class="reveal-inner"><div class="sp-finale">THE FINALE</div><div class="sp-hp" id="sp-hp-1"><i></i></div><div class="sp-title" id="sp-title-1">Say three 5-letter words to summon me!</div><canvas id="space-cv-1" class="space-cv" width="480" height="480"></canvas><div class="sp-msg" id="sp-msg-1"></div><div class="sp-words" id="sp-words-1"></div></div></div>
+  <div id="space-section-1" class="reveal"><div class="reveal-inner"><div class="sp-finale">THE FINALE</div><div class="sp-hp" id="sp-hp-1"><i></i></div><div class="sp-title" id="sp-title-1" data-i18n="sptitle">Say three 5-letter words to summon me!</div><canvas id="space-cv-1" class="space-cv" width="480" height="480"></canvas><div class="sp-msg" id="sp-msg-1"></div><div class="sp-words" id="sp-words-1"></div></div></div>
   <div class="deco" id="pillars"></div>
   <div class="shelf" id="shelf"></div>
   <div id="rotate-shelf" class="reveal"><div class="reveal-inner"><div>
-    <button class="rot-btn" onpointerdown="rotHold(-1)" onpointerup="rotRelease(-1)" onpointerleave="rotRelease(-1)" onpointercancel="rotRelease(-1)" oncontextmenu="return false" aria-label="Rotate counterclockwise"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg></button>
-    <button class="rot-btn" onpointerdown="rotHold(1)" onpointerup="rotRelease(1)" onpointerleave="rotRelease(1)" onpointercancel="rotRelease(1)" oncontextmenu="return false" aria-label="Rotate clockwise"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg></button>
+    <button class="rot-btn" onpointerdown="rotHold(-1)" onpointerup="rotRelease(-1)" onpointerleave="rotRelease(-1)" onpointercancel="rotRelease(-1)" oncontextmenu="return false" data-i18n-aria="rotccw" aria-label="Rotate counterclockwise"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg></button>
+    <button class="rot-btn" onpointerdown="rotHold(1)" onpointerup="rotRelease(1)" onpointerleave="rotRelease(1)" onpointercancel="rotRelease(1)" oncontextmenu="return false" data-i18n-aria="rotcw" aria-label="Rotate clockwise"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg></button>
   </div></div></div>
   <div id="puzzle1-info" class="reveal"><div class="reveal-inner">
     <div class="info-row">
@@ -334,26 +334,26 @@ With that being said, I hope you enjoy it. Good luck!</p>
     </div></div></div>
   </div></div>
   <div id="platformer-section" class="reveal"><div class="reveal-inner"><div id="plat"></div></div></div>
-  <button id="skip-btn" class="big-btn" onclick="skipPuzzle1()">Skip to next puzzle (test)</button>
+  <button id="skip-btn" class="big-btn" data-i18n="skip" onclick="skipPuzzle1()">Skip to next puzzle (test)</button>
   <div id="p2-copy-section" class="reveal"><div class="reveal-inner"><div class="tetris-grid letters" id="p2-copy-grid" style="pointer-events:none; user-select:none; -webkit-user-select:none;"></div></div></div>
 </div>
 
 <div id="screen-game2" class="screen">
-  <div id="space-section-2" class="reveal"><div class="reveal-inner"><div class="sp-finale">THE FINALE</div><div class="sp-hp" id="sp-hp-2"><i></i></div><div class="sp-title" id="sp-title-2">Say three 5-letter words to summon me!</div><canvas id="space-cv-2" class="space-cv" width="480" height="480"></canvas><div class="sp-msg" id="sp-msg-2"></div><div class="sp-words" id="sp-words-2"></div></div></div>
+  <div id="space-section-2" class="reveal"><div class="reveal-inner"><div class="sp-finale">THE FINALE</div><div class="sp-hp" id="sp-hp-2"><i></i></div><div class="sp-title" id="sp-title-2" data-i18n="sptitle">Say three 5-letter words to summon me!</div><canvas id="space-cv-2" class="space-cv" width="480" height="480"></canvas><div class="sp-msg" id="sp-msg-2"></div><div class="sp-words" id="sp-words-2"></div></div></div>
   <div class="light-row">
     <div class="light" id="light"></div>
   </div>
-  <div class="hint">From shortest to tallest</div>
+  <div class="hint" data-i18n="shortest">From shortest to tallest</div>
   <div id="puzzle2-section" class="reveal"><div class="reveal-inner">
     <div class="tetris-tray" id="tetris-tray"></div>
     <div class="tetris-grid" id="tetris-grid"></div>
-    <button class="big-btn" id="submit-btn" onclick="submitPattern()">Submit</button>
+    <button class="big-btn" id="submit-btn" data-i18n="submit" onclick="submitPattern()">Submit</button>
   </div></div>
   <div id="controls-section" class="reveal"><div class="reveal-inner">
     <div class="pad">
-      <button class="rot-btn pad-btn" id="pbtn-l" onpointerdown="btnHold('l')" onpointerup="btnRelease('l')" onpointerleave="btnRelease('l')" onpointercancel="btnRelease('l')" oncontextmenu="return false" aria-label="Left"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
-      <button class="rot-btn pad-btn" id="pbtn-u" onpointerdown="btnHold('u')" onpointerup="btnRelease('u')" onpointerleave="btnRelease('u')" onpointercancel="btnRelease('u')" oncontextmenu="return false" aria-label="Jump"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 15l7-7 7 7"/></svg></button>
-      <button class="rot-btn pad-btn" id="pbtn-r" onpointerdown="btnHold('r')" onpointerup="btnRelease('r')" onpointerleave="btnRelease('r')" onpointercancel="btnRelease('r')" oncontextmenu="return false" aria-label="Right"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
+      <button class="rot-btn pad-btn" id="pbtn-l" onpointerdown="btnHold('l')" onpointerup="btnRelease('l')" onpointerleave="btnRelease('l')" onpointercancel="btnRelease('l')" oncontextmenu="return false" data-i18n-aria="left" aria-label="Left"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
+      <button class="rot-btn pad-btn" id="pbtn-u" onpointerdown="btnHold('u')" onpointerup="btnRelease('u')" onpointerleave="btnRelease('u')" onpointercancel="btnRelease('u')" oncontextmenu="return false" data-i18n-aria="jump" aria-label="Jump"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 15l7-7 7 7"/></svg></button>
+      <button class="rot-btn pad-btn" id="pbtn-r" onpointerdown="btnHold('r')" onpointerup="btnRelease('r')" onpointerleave="btnRelease('r')" onpointercancel="btnRelease('r')" oncontextmenu="return false" data-i18n-aria="right" aria-label="Right"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
     </div>
   </div></div>
   <div id="puzzle3-section" class="reveal"><div class="reveal-inner"><div class="maze-stage"><div class="maze" id="maze"></div></div></div></div>
@@ -393,7 +393,7 @@ With that being said, I hope you enjoy it. Good luck!</p>
 </div>
 
 <div id="screen-win" class="screen">
-  <div class="win">You win! ðŸŽ‰</div>
+  <div class="win"><span data-i18n="youwin">You win!</span> ðŸŽ‰</div>
 </div>
 
 <script>
@@ -808,7 +808,25 @@ const I18N = {
   dcme: ["You disconnected", "Você desconectou"],
   dccodelabel: ["Reconnect code", "Código para reconectar"],
   dccode: ["CODE", "ABCD"],
-  dcreconnect: ["Reconnect", "Reconectar"]
+  dcreconnect: ["Reconnect", "Reconectar"],
+  finale: ["THE FINALE", "placeholder 1"],
+  bossname: ["NICRAFTIN", "placeholder 2"],
+  sptitle: ["Say three 5-letter words to summon me!", "placeholder 3"],
+  rotccw: ["Rotate counterclockwise", "placeholder 4"],
+  rotcw: ["Rotate clockwise", "placeholder 5"],
+  skip: ["Skip to next puzzle (test)", "placeholder 6"],
+  shortest: ["From shortest to tallest", "placeholder 7"],
+  left: ["Left", "placeholder 8"],
+  jump: ["Jump", "placeholder 9"],
+  right: ["Right", "placeholder 10"],
+  submit: ["Submit", "placeholder 11"],
+  deaths: ["deaths", "placeholder 12"],
+  remaining: ["remaining", "placeholder 13"],
+  stoptimer: ["Stop the timer", "placeholder 14"],
+  congrats: ["Congratulations, you win!", "placeholder 15"],
+  credit1: ["A game made by Nicraftin", "placeholder 16"],
+  credit2: ["Thank you for playing!", "placeholder 17"],
+  youwin: ["You win!", "placeholder 18"]
 };
 function T(k){ const e = I18N[k]; return e ? (curLang === 'pt' ? e[1] : e[0]) : k; }
 function applyLang(){
@@ -1997,6 +2015,61 @@ function spShowWords(id, words, leaving){
     });
   }
 }
+const SP_MSG_PT = [
+  "placeholder 19",
+  "placeholder 20",
+  "placeholder 21",
+  "placeholder 22",
+  "placeholder 23",
+  "placeholder 24",
+  "placeholder 25",
+  "placeholder 26",
+  "placeholder 27",
+  "placeholder 28",
+  "placeholder 29",
+  "placeholder 30",
+  "placeholder 31",
+  "placeholder 32",
+  "placeholder 33",
+  "placeholder 34",
+  "placeholder 35",
+  "placeholder 36",
+  "placeholder 37",
+  "placeholder 38",
+  "placeholder 39",
+  "placeholder 40",
+  "placeholder 41",
+  "placeholder 42",
+  "placeholder 43",
+  "placeholder 44",
+  "placeholder 45",
+  "placeholder 46",
+  "placeholder 47",
+  "placeholder 48",
+  "placeholder 49",
+  "placeholder 50",
+  "placeholder 51",
+  "placeholder 52",
+  "placeholder 53",
+  "placeholder 54",
+  "placeholder 55",
+  "placeholder 56",
+  "placeholder 57",
+  "placeholder 58",
+  "placeholder 59",
+  "placeholder 60",
+  "placeholder 61",
+  "placeholder 62",
+  "placeholder 63",
+  "placeholder 64",
+  "placeholder 65",
+  "placeholder 66",
+  "placeholder 67",
+  "placeholder 68",
+  "placeholder 69",
+  "placeholder 70",
+  "placeholder 71"
+];
 const SP_MSG = [
   "So you've chosen death...",
   "You really did choose death, want another one?",
@@ -2056,7 +2129,7 @@ function spTitle(id, s){
   const fin = document.querySelector('#space-section-' + id + ' .sp-finale'), ti = $('sp-title-' + id), hp = $('sp-hp-' + id), msg = $('sp-msg-' + id);
   if(!ti || !hp || !msg) return;
   const b = !!s.boss;
-  if(fin){ const t = b ? 'NICRAFTIN' : 'THE FINALE'; if(fin.textContent !== t) fin.textContent = t; fin.classList.toggle('boss', b); }
+  if(fin){ const t = b ? T('bossname') : T('finale'); if(fin.textContent !== t) fin.textContent = t; fin.classList.toggle('boss', b); }
   ti.style.display = b ? 'none' : '';
   hp.classList.toggle('on', b); msg.classList.toggle('on', b);
   if(!b) return;
@@ -2067,8 +2140,8 @@ function spTitle(id, s){
     if(p.anger >= 0 && p.anger < .6 && p.hp > 0) w = 0;
   }
   if(hp._w !== w){ hp.classList.toggle('filling', w > (hp._w || 0)); hp._w = w; hp.firstChild.style.width = w + '%'; }
-  const d = s.deaths || 0, m = SP_MSG[d];
-  const t = m === undefined ? d + ' deaths' : (typeof m === 'function' ? m() : m);
+  const d = s.deaths || 0, m = (curLang === 'pt' ? SP_MSG_PT : SP_MSG)[d];
+  const t = m === undefined ? d + ' ' + T('deaths') : (typeof m === 'function' ? m() : m);
   if(msg.textContent !== t) msg.textContent = t;
   if(msg._k !== d){ msg._k = d; msg.classList.remove('swap'); void msg.offsetWidth; msg.classList.add('swap'); }
 }
@@ -2564,11 +2637,11 @@ function startFinale(){
     setTimeout(finShowButton, 3600);
   }, end + 300);
 }
-function finText(){ const n = $('fin-count'); if(n) n.textContent = finN + ' remaining'; }
+function finText(){ const n = $('fin-count'); if(n) n.textContent = finN + ' ' + T('remaining'); }
 function finShowButton(){
   if(finDone) return;
   const b = document.createElement('button'); b.id = 'fin-btn';
-  b.innerHTML = '<span>Stop the timer</span>';
+  b.innerHTML = '<span data-i18n="stoptimer">' + T('stoptimer') + '</span>';
   document.body.appendChild(b); finBtn = b;
   const cnt = document.createElement('div'); cnt.id = 'fin-count'; document.body.appendChild(cnt); finText();
   const tr = $('game-timer').getBoundingClientRect();
@@ -2633,11 +2706,11 @@ function finWin(ms){
   finVanish(); SFX.win();
   const t = $('game-timer'); t.textContent = fmtTime(ms);
   t.style.fontSize = 'min(5.2rem,15vw)'; t.classList.add('done');
-  const m = document.createElement('div'); m.id = 'fin-msg'; m.textContent = 'Congratulations, you win!'; document.body.appendChild(m);
+  const m = document.createElement('div'); m.id = 'fin-msg'; m.setAttribute('data-i18n', 'congrats'); m.textContent = T('congrats'); document.body.appendChild(m);
   setTimeout(() => { const GAP = 64, tr = $('game-timer').getBoundingClientRect(); m.style.bottom = 'auto'; m.style.top = (tr.top - GAP - m.offsetHeight) + 'px'; m.classList.add('on'); }, 2600);
-  const cr = document.createElement('div'); cr.id = 'fin-credit'; cr.innerHTML = 'A game made by Nicraftin<br>Thank you for playing!<br><br><span style="font-size:1.4em; color:#fff; line-height:1;">&#9829;</span>'; document.body.appendChild(cr);
+  const cr = document.createElement('div'); cr.id = 'fin-credit'; cr.innerHTML = '<span data-i18n="credit1">' + T('credit1') + '</span><br><span data-i18n="credit2">' + T('credit2') + '</span><br><br><span style="font-size:1.4em; color:#fff; line-height:1;">&#9829;</span>'; document.body.appendChild(cr);
   setTimeout(() => { cr.style.top = ($('game-timer').getBoundingClientRect().bottom + 64) + 'px'; cr.classList.add('on'); }, 2600);
-  const rb = document.createElement('button'); rb.id = 'fin-return'; rb.textContent = 'Return'; rb.onclick = () => location.reload(); document.body.appendChild(rb);
+  const rb = document.createElement('button'); rb.id = 'fin-return'; rb.setAttribute('data-i18n', 'inforeturn'); rb.textContent = T('inforeturn'); rb.onclick = () => location.reload(); document.body.appendChild(rb);
   setTimeout(() => rb.classList.add('on'), 2600);
 }
 let p2CopyCells = [];
