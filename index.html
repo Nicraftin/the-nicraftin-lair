@@ -228,10 +228,12 @@ body:has(#screen-choose.active) #title-bg{display:block;}
 .title-sec{display:flex; gap:14px; justify-content:center; flex-wrap:wrap; margin-top:22px;}
 #screen-choose #rc-open-btn, #screen-choose #info-open-btn{margin-top:0 !important; padding:12px 28px; border-radius:999px; border:2px solid rgba(255,255,255,.28); background:rgba(255,255,255,.08); color:#fff; font-size:1rem; font-weight:700; letter-spacing:.06em; backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px); cursor:pointer; transition:transform .18s ease, background .18s ease, box-shadow .18s ease;}
 #screen-choose #rc-open-btn:hover, #screen-choose #info-open-btn:hover{transform:translateY(-3px); background:rgba(255,255,255,.18); box-shadow:0 0 22px rgba(201,184,255,.5);}
-#screen-choose #join-box, #screen-choose #rc-box, #screen-choose #info-box{margin:26px auto 0 !important; max-width:380px; padding:22px; border-radius:20px; background:rgba(20,12,50,.65); border:2px solid rgba(255,255,255,.15); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px);}
-#screen-choose #info-box h2{margin:0 0 10px; color:#ffd37a;}
+#screen-choose #join-box, #screen-choose #rc-box, #screen-choose #info-box{position:relative; margin:26px auto 0 !important; max-width:380px; padding:22px; border-radius:20px; background:rgba(20,12,50,.65); border:2px solid rgba(255,255,255,.15); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px);}
+#screen-choose #info-box{max-width:720px;}
+#screen-choose #info-box h2{margin:0 0 10px; text-align:center; font-size:1.8rem; color:#ffd37a;}
+#screen-choose #info-box h2.disc{color:#ff7a8c;}
 #screen-choose #info-box p{margin:0 0 18px; color:#e6e0ff; white-space:pre-line; text-align:left;}
-.back-tri{display:block; width:34px; height:34px; margin:0 0 12px; padding:0; border:none; background:#c9b8ff; clip-path:polygon(0 50%,100% 0,100% 100%); cursor:pointer; transition:background .18s ease, transform .18s ease;}
+.back-tri{display:block; position:absolute; top:22px; left:22px; width:17px; height:17px; margin:0; padding:0; border:none; background:#c9b8ff; clip-path:polygon(0 50%,100% 0,100% 100%); cursor:pointer; transition:background .18s ease, transform .18s ease;}
 .back-tri:hover{background:#fff; transform:translateX(-3px);}
 #screen-choose .code-input{background:rgba(0,0,0,.35); border-color:rgba(255,255,255,.25); color:#fff;}
 #screen-choose .big-btn{background:linear-gradient(135deg,#5865f2,#8a5cf0); box-shadow:0 6px 20px rgba(88,101,242,.45);}
@@ -266,17 +268,16 @@ body:has(#screen-choose.active) #title-bg{display:block;}
     <button class="big-btn" onclick="doRejoin($('rc-in').value, $('connect-err'))">Connect</button>
   </div>
   <div id="info-box" style="display:none;">
-    <p>Welcome to the Nicraftin Lair!
-Hop on a voice call with a friend and try to beat this escape room as fast as you can.
+    <h2>Welcome to the Nicraftin Lair!</h2>
+    <p>Hop on a voice call with a friend and try to beat this escape room as fast as you can.
 Communication is key, you will need to share information with each other constantly in order to beat this.
 Only talk though, because sending images or sharing your screen is not allowed, that defeats the whole purpose of the game.
-The expected time of completion is between 2 and 3 hours, so try to play this when you both have at least 3 hours available.
-
-DISCLAIMER:
-While the game's code, visual art and sound effects were made with the help of AI, all of the songs, text and game design were fully human made.
+The expected time of completion is between 2 and 3 hours, so try to play this when you both have at least 3 hours available.</p>
+    <h2 class="disc">DISCLAIMER:</h2>
+    <p>While the game's code, visual art and sound effects were made with the help of AI, all of the songs, text and game design were fully human made.
 I'm sorry if that's a deal breaker. This project was only intended for my close friends, and otherwise would've taken months to finish.
 With that being said, I hope you enjoy it. Good luck!</p>
-    <button class="big-btn" onclick="hideInfo()">Back</button>
+    <button class="big-btn" onclick="hideInfo()">Return</button>
   </div>
   <div class="err" id="connect-err"></div>
 </div>
@@ -759,10 +760,10 @@ function attemptHost(){
 }
 
 function hideChoices(){ $('role-row').style.display = 'none'; $('title-sec').style.display = 'none'; }
-function showInfo(){ hideChoices(); $('info-box').style.display = 'block'; }
-function hideInfo(){ $('info-box').style.display = 'none'; $('role-row').style.display = ''; $('title-sec').style.display = ''; }
+function showInfo(){ hideChoices(); ['title-pud','title-h','title-sub'].forEach(i => $(i).style.display = 'none'); $('info-box').style.display = 'block'; }
+function hideInfo(){ SFX.back(); ['title-pud','title-h','title-sub'].forEach(i => $(i).style.display = ''); $('info-box').style.display = 'none'; $('role-row').style.display = ''; $('title-sec').style.display = ''; }
 function showJoin(){ hideChoices(); $('join-box').style.display = 'block'; }
-function hideJoin(){ $('join-box').style.display = 'none'; $('role-row').style.display = ''; $('title-sec').style.display = ''; $('connect-err').textContent = ''; }
+function hideJoin(){ SFX.back(); $('join-box').style.display = 'none'; $('role-row').style.display = ''; $('title-sec').style.display = ''; $('connect-err').textContent = ''; }
 function startJoin(){
   const code = $('code-in').value.trim().toUpperCase();
   if(code.length !== 4){ $('connect-err').textContent = 'Enter the 4-character code.'; return; }
@@ -854,7 +855,7 @@ function listenRejoin(){
   }));
 }
 function showRc(){ hideChoices(); $('rc-box').style.display = 'block'; }
-function hideRc(){ $('rc-box').style.display = 'none'; $('role-row').style.display = ''; $('title-sec').style.display = ''; $('connect-err').textContent = ''; }
+function hideRc(){ SFX.back(); $('rc-box').style.display = 'none'; $('role-row').style.display = ''; $('title-sec').style.display = ''; $('connect-err').textContent = ''; }
 function doRejoin(code, errEl){
   code = code.trim().toUpperCase();
   if(code.length !== 4){ errEl.textContent = 'Enter the 4-character code.'; return; }
@@ -2796,9 +2797,9 @@ buildSubmitPreview();
     const ig = g.createRadialGradient(0, -4, 4, 0, -4, 40); ig.addColorStop(0, '#eb7f10'); ig.addColorStop(1, '#b8560c');
     g.fillStyle = ig; g.fill();
     g.fillStyle = 'rgba(255,214,140,.45)'; g.beginPath(); g.ellipse(-8, -8, 10, 2.5, -.2, 0, Math.PI * 2); g.fill();
-    const bl = (T % 3.3) < .12 ? .15 : 1, ax = Math.atan2(mpy - (r.top + r.height / 2), mpx - (r.left + r.width / 2)), ex = Math.cos(ax) * 2.3, ey = Math.sin(ax) * 2.3;
+    const bl = (T % 3.3) < .12 ? .15 : 1, bob = Math.sin(T * 1.7) * 5, kx = r.width / 260, ky = r.height / 190, eyc = (sx) => { const a = Math.atan2(mpy - (r.top + (98 + bob + 36) * ky), mpx - (r.left + (130 + sx * 3) * kx)); return [Math.cos(a) * 1.4, Math.sin(a) * 1.4]; }, e1 = eyc(-18), e2 = eyc(18);
     g.fillStyle = '#1a1006'; g.beginPath(); g.ellipse(-18, 12, 3.6, 3.6 * bl, 0, 0, Math.PI * 2); g.ellipse(18, 12, 3.6, 3.6 * bl, 0, 0, Math.PI * 2); g.fill();
-    if(bl > .5){ g.fillStyle = 'rgba(255,255,255,.85)'; g.beginPath(); g.ellipse(-18 + ex, 12 + ey, 1.1, 1.1, 0, 0, Math.PI * 2); g.ellipse(18 + ex, 12 + ey, 1.1, 1.1, 0, 0, Math.PI * 2); g.fill(); }
+    if(bl > .5){ g.fillStyle = 'rgba(255,255,255,.85)'; g.beginPath(); g.ellipse(-18 + e1[0], 12 + e1[1], 2.2, 2.2, 0, 0, Math.PI * 2); g.ellipse(18 + e2[0], 12 + e2[1], 2.2, 2.2, 0, 0, Math.PI * 2); g.fill(); }
     g.strokeStyle = '#000'; g.lineWidth = 1.6; g.lineCap = 'round'; g.lineJoin = 'round';
     g.beginPath(); g.moveTo(-7, 19); g.quadraticCurveTo(-4.5, 21.5, -2, 19); g.quadraticCurveTo(0, 17.5, 2, 19); g.quadraticCurveTo(4.5, 21.5, 7, 19); g.stroke();
     g.restore();
