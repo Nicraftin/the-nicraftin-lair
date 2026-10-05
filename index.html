@@ -203,11 +203,48 @@ input.code-input{ font-size:1.4rem; letter-spacing:.3em; text-align:center; text
 #fin-return{position:fixed; left:50%; bottom:calc(28px + env(safe-area-inset-bottom,0px)); transform:translateX(-50%); z-index:60; padding:14px 32px; border-radius:14px; border:none; background:#6b7280; color:#fff; font-size:1.1rem; font-weight:600; cursor:pointer; opacity:0; transition:opacity 1.2s ease;}
 #fin-return.on{opacity:1;}
 .fin-shard{position:fixed; left:0; top:0; width:10px; height:10px; border-radius:3px; background:var(--danger); z-index:65; pointer-events:none;}
+
+/* ---- title screen ---- */
+#title-bg{position:fixed; inset:0; z-index:0; display:none; background:#07051a;}
+body:has(#screen-choose.active) #title-bg{display:block;}
+#title-bg canvas{position:absolute; inset:0; width:100%; height:100%; display:block;}
+#screen-choose{max-width:760px; position:relative; z-index:1; color:#f2f2f7;}
+#title-pud{width:260px; height:190px; max-width:70vw; display:block; margin:0 auto -10px; filter:drop-shadow(0 0 28px rgba(255,150,40,.55));}
+#title-h{margin:0 0 6px; font-size:clamp(2.2rem,8vw,4.4rem); font-weight:900; letter-spacing:.02em; line-height:1.05; text-transform:uppercase; user-select:none; -webkit-user-select:none;}
+#title-h .tw{display:inline-block; white-space:nowrap;}
+#title-h .tl{display:inline-block; background:linear-gradient(180deg,#fff2c4 0%,#ffb347 45%,#e0661a 100%); -webkit-background-clip:text; background-clip:text; color:transparent; -webkit-text-fill-color:transparent; filter:drop-shadow(0 3px 0 #5a1d05) drop-shadow(0 0 16px rgba(255,140,40,.55)); animation:tlWave 2.6s ease-in-out infinite; animation-delay:calc(var(--i) * .09s);}
+#title-h .tsp{display:inline-block; width:.35em;}
+@keyframes tlWave{0%,100%{transform:translateY(0) rotate(0);} 50%{transform:translateY(-8px) rotate(-1.5deg);}}
+#title-sub{color:#c9b8ff; letter-spacing:.35em; font-size:.8rem; text-transform:uppercase; margin:0 0 30px; opacity:.85; animation:subPulse 3s ease-in-out infinite;}
+@keyframes subPulse{0%,100%{opacity:.55;} 50%{opacity:1;}}
+#screen-choose .row{gap:20px;}
+#screen-choose .role-btn{position:relative; overflow:hidden; flex:1 1 190px; max-width:230px; padding:26px 16px; border-radius:20px; border:2px solid rgba(255,255,255,.18); background:linear-gradient(160deg,rgba(88,101,242,.55),rgba(40,20,90,.7)); color:#fff; font-size:1.35rem; font-weight:800; letter-spacing:.04em; backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px); box-shadow:0 10px 30px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.25); transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease;}
+#screen-choose .role-btn:nth-child(2){background:linear-gradient(160deg,rgba(255,140,50,.6),rgba(110,25,60,.72));}
+#screen-choose .role-btn small{display:block; margin-top:4px; font-size:.8rem; font-weight:600; opacity:.8; letter-spacing:.12em; text-transform:uppercase;}
+#screen-choose .role-btn::after{content:""; position:absolute; top:0; left:-80%; width:50%; height:100%; background:linear-gradient(100deg,transparent,rgba(255,255,255,.35),transparent); transform:skewX(-20deg); transition:left .6s ease;}
+#screen-choose .role-btn:hover{transform:translateY(-6px) scale(1.04); border-color:#ffd37a; box-shadow:0 16px 40px rgba(0,0,0,.55), 0 0 30px rgba(255,190,90,.5);}
+#screen-choose .role-btn:hover::after{left:140%;}
+#screen-choose .role-btn:active{transform:translateY(-1px) scale(.98);}
+.title-sec{display:flex; gap:14px; justify-content:center; flex-wrap:wrap; margin-top:22px;}
+#screen-choose #rc-open-btn, #screen-choose #info-open-btn{margin-top:0 !important; padding:12px 28px; border-radius:999px; border:2px solid rgba(255,255,255,.28); background:rgba(255,255,255,.08); color:#fff; font-size:1rem; font-weight:700; letter-spacing:.06em; backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px); cursor:pointer; transition:transform .18s ease, background .18s ease, box-shadow .18s ease;}
+#screen-choose #rc-open-btn:hover, #screen-choose #info-open-btn:hover{transform:translateY(-3px); background:rgba(255,255,255,.18); box-shadow:0 0 22px rgba(201,184,255,.5);}
+#screen-choose #join-box, #screen-choose #rc-box, #screen-choose #info-box{margin:26px auto 0 !important; max-width:380px; padding:22px; border-radius:20px; background:rgba(20,12,50,.65); border:2px solid rgba(255,255,255,.15); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px);}
+#screen-choose #info-box h2{margin:0 0 10px; color:#ffd37a;}
+#screen-choose #info-box p{margin:0 0 18px; color:#e6e0ff;}
+#screen-choose .code-input{background:rgba(0,0,0,.35); border-color:rgba(255,255,255,.25); color:#fff;}
+#screen-choose .big-btn{background:linear-gradient(135deg,#5865f2,#8a5cf0); box-shadow:0 6px 20px rgba(88,101,242,.45);}
+#screen-choose .err{min-height:1.2em;}
+@media (prefers-reduced-motion: reduce){ #title-h .tl{animation:none;} }
 </style>
 </head>
 <body>
 
+<div id="title-bg"><canvas id="title-bg-c"></canvas></div>
+
 <div id="screen-choose" class="screen active">
+  <canvas id="title-pud"></canvas>
+  <h1 id="title-h" aria-label="The Nicraftin Lair">The Nicraftin Lair</h1>
+  <div id="title-sub">A two player escape room</div>
   <div class="row" id="role-row" style="margin-top:20px;">
     <button class="role-btn" onclick="startHost()">Player 1<br><small>(hosts)</small></button>
     <button class="role-btn" onclick="showJoin()">Player 2<br><small>(joins)</small></button>
@@ -216,10 +253,18 @@ input.code-input{ font-size:1.4rem; letter-spacing:.3em; text-align:center; text
     <div><input id="code-in" class="code-input" maxlength="4" placeholder="CODE"></div>
     <button class="big-btn" onclick="startJoin()">Connect</button>
   </div>
-  <button class="big-btn" id="rc-open-btn" style="margin-top:20px;" onclick="showRc()">Reconnect</button>
+  <div class="title-sec" id="title-sec">
+    <button class="big-btn" id="rc-open-btn" onclick="showRc()">Reconnect</button>
+    <button class="big-btn" id="info-open-btn" onclick="showInfo()">Info</button>
+  </div>
   <div id="rc-box" style="display:none; margin-top:20px;">
     <div><input id="rc-in" class="code-input" maxlength="4" placeholder="CODE"></div>
     <button class="big-btn" onclick="doRejoin($('rc-in').value, $('connect-err'))">Connect</button>
+  </div>
+  <div id="info-box" style="display:none;">
+    <h2>Info</h2>
+    <p>placeholder text</p>
+    <button class="big-btn" onclick="hideInfo()">Back</button>
   </div>
   <div class="err" id="connect-err"></div>
 </div>
@@ -701,7 +746,9 @@ function attemptHost(){
   });
 }
 
-function hideChoices(){ $('role-row').style.display = 'none'; $('rc-open-btn').style.display = 'none'; }
+function hideChoices(){ $('role-row').style.display = 'none'; $('title-sec').style.display = 'none'; }
+function showInfo(){ hideChoices(); $('info-box').style.display = 'block'; }
+function hideInfo(){ $('info-box').style.display = 'none'; $('role-row').style.display = ''; $('title-sec').style.display = ''; }
 function showJoin(){ hideChoices(); $('join-box').style.display = 'block'; }
 function startJoin(){
   const code = $('code-in').value.trim().toUpperCase();
@@ -2631,6 +2678,127 @@ buildHeartPreview();
 buildColorPreview();
 buildTetris3Preview();
 buildSubmitPreview();
+</script>
+<script>
+(function(){
+  const bgc = document.getElementById('title-bg-c'), pc = document.getElementById('title-pud'), scr = document.getElementById('screen-choose');
+  const bx = bgc.getContext('2d'), px = pc.getContext('2d');
+  // title letters
+  const th = document.getElementById('title-h'); th.textContent = '';
+  let li = 0;
+  'The Nicraftin Lair'.split(' ').forEach((w, wi) => {
+    if(wi) { const sp = document.createElement('span'); sp.className = 'tsp'; sp.setAttribute('aria-hidden','true'); th.appendChild(sp); th.appendChild(document.createTextNode(' ')); }
+    const ws = document.createElement('span'); ws.className = 'tw'; ws.setAttribute('aria-hidden','true');
+    w.split('').forEach(ch => { const l = document.createElement('span'); l.className = 'tl'; l.textContent = ch; l.style.setProperty('--i', li++); ws.appendChild(l); });
+    th.appendChild(ws);
+  });
+  let W = 0, H = 0, dpr = 1, mx = .5, my = .5, mpx = 0, mpy = 0;
+  const SH = [[[0,0],[1,0],[2,0],[3,0]], [[0,0],[1,0],[0,1],[1,1]], [[0,0],[1,0],[2,0],[1,1]], [[0,0],[0,1],[1,1],[2,1]], [[2,0],[0,1],[1,1],[2,1]], [[1,0],[2,0],[0,1],[1,1]], [[0,0],[1,0],[1,1],[2,1]]];
+  const COL = ['#5865f2','#3ddc97','#ff5c72','#ffb347','#c9b8ff','#4fd1ff'];
+  let stars = [], blocks = [], embers = [];
+  function rnd(a, b){ return a + Math.random() * (b - a); }
+  function resize(){
+    dpr = Math.min(2, window.devicePixelRatio || 1); W = window.innerWidth; H = window.innerHeight;
+    bgc.width = W * dpr; bgc.height = H * dpr;
+    pc.width = 260 * 2; pc.height = 190 * 2;
+    const n = Math.round(W * H / 9000);
+    stars = Array.from({length: n}, () => ({x: Math.random(), y: Math.random(), z: rnd(.2, 1), t: rnd(0, 6.3), s: rnd(.5, 1.8)}));
+    blocks = Array.from({length: Math.max(10, Math.round(W / 70))}, () => mkBlock(true));
+    embers = Array.from({length: 50}, () => mkEmber(true));
+  }
+  function mkBlock(init){ return {x: rnd(0, W), y: init ? rnd(0, H) : H + 60, sh: SH[(Math.random() * SH.length) | 0], c: COL[(Math.random() * COL.length) | 0], s: rnd(10, 26), v: rnd(10, 32), r: rnd(0, 6.3), rv: rnd(-.5, .5), z: rnd(.3, 1)}; }
+  function mkEmber(init){ return {x: rnd(0, W), y: init ? rnd(0, H) : H + 10, v: rnd(20, 70), r: rnd(1, 3), t: rnd(0, 6.3)}; }
+  window.addEventListener('resize', resize); resize();
+  window.addEventListener('mousemove', e => { mx = e.clientX / W; my = e.clientY / H; mpx = e.clientX; mpy = e.clientY; });
+  window.addEventListener('touchmove', e => { const t = e.touches[0]; if(t){ mx = t.clientX / W; my = t.clientY / H; mpx = t.clientX; mpy = t.clientY; } }, {passive:true});
+  mpx = window.innerWidth / 2; mpy = window.innerHeight / 2;
+
+  function drawBg(T, dt){
+    const g = bx; g.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const gr = g.createLinearGradient(0, 0, 0, H); gr.addColorStop(0, '#05030f'); gr.addColorStop(.5, '#170a38'); gr.addColorStop(1, '#3a0f2e');
+    g.fillStyle = gr; g.fillRect(0, 0, W, H);
+    const cx = W / 2 + (mx - .5) * -30, cy = H * .3 + (my - .5) * -20;
+    // rotating light rays
+    g.save(); g.translate(cx, cy); g.rotate(T * .06);
+    const R = Math.hypot(W, H);
+    for(let i = 0; i < 16; i++){
+      const a0 = i * Math.PI / 8, a1 = a0 + Math.PI / 16;
+      const rg = g.createRadialGradient(0, 0, 0, 0, 0, R * .7); rg.addColorStop(0, 'rgba(255,160,60,.22)'); rg.addColorStop(1, 'rgba(255,160,60,0)');
+      g.fillStyle = rg; g.beginPath(); g.moveTo(0, 0); g.arc(0, 0, R * .7, a0, a1); g.closePath(); g.fill();
+    }
+    g.restore();
+    // glow behind pudding
+    const pg = g.createRadialGradient(cx, cy, 0, cx, cy, Math.max(W, H) * .45 * (1 + Math.sin(T * 1.2) * .04));
+    pg.addColorStop(0, 'rgba(255,150,50,.38)'); pg.addColorStop(.4, 'rgba(180,60,120,.18)'); pg.addColorStop(1, 'rgba(0,0,0,0)');
+    g.fillStyle = pg; g.fillRect(0, 0, W, H);
+    // stars
+    for(const st of stars){
+      const x = ((st.x * W + (mx - .5) * -40 * st.z) % W + W) % W, y = st.y * H + (my - .5) * -40 * st.z;
+      g.globalAlpha = .35 + .65 * (.5 + .5 * Math.sin(T * 2 * st.z + st.t));
+      g.fillStyle = '#fff'; g.beginPath(); g.arc(x, y, st.s * st.z, 0, 6.283); g.fill();
+    }
+    g.globalAlpha = 1;
+    // floating tetris pieces
+    for(const b of blocks){
+      b.y -= b.v * b.z * dt; b.r += b.rv * dt;
+      if(b.y < -120){ Object.assign(b, mkBlock(false)); }
+      g.save(); g.translate(b.x + (mx - .5) * -60 * b.z, b.y); g.rotate(b.r); g.globalAlpha = .1 + .2 * b.z;
+      g.fillStyle = b.c; g.strokeStyle = b.c; g.lineWidth = 2; g.shadowColor = b.c; g.shadowBlur = 14;
+      for(const [qx, qy] of b.sh){ g.beginPath(); g.roundRect ? g.roundRect(qx * b.s, qy * b.s, b.s - 2, b.s - 2, 3) : g.rect(qx * b.s, qy * b.s, b.s - 2, b.s - 2); g.globalAlpha *= 1; g.fill(); }
+      g.restore();
+    }
+    g.globalAlpha = 1;
+    // embers
+    for(const e of embers){
+      e.y -= e.v * dt; e.t += dt;
+      if(e.y < -10){ Object.assign(e, mkEmber(false)); }
+      const x = e.x + Math.sin(e.t * 1.5) * 18;
+      g.fillStyle = 'rgba(255,' + (150 + ((e.r * 30) | 0)) + ',70,' + (.35 + .3 * Math.sin(e.t * 3)) + ')';
+      g.beginPath(); g.arc(x, e.y, e.r, 0, 6.283); g.fill();
+    }
+    // fog waves
+    const cols = ['rgba(90,30,120,.35)', 'rgba(140,40,100,.3)', 'rgba(255,120,60,.18)'];
+    for(let k = 0; k < 3; k++){
+      g.fillStyle = cols[k]; g.beginPath(); g.moveTo(0, H);
+      const base = H - 40 - k * 28;
+      for(let x = 0; x <= W; x += 12) g.lineTo(x, base + Math.sin(x * .006 + T * (.5 + k * .25) + k * 2) * (18 + k * 6) + (mx - .5) * 10 * k);
+      g.lineTo(W, H); g.closePath(); g.fill();
+    }
+    // vignette
+    const vg = g.createRadialGradient(W / 2, H / 2, Math.min(W, H) * .35, W / 2, H / 2, Math.hypot(W, H) * .6);
+    vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(0,0,0,.65)');
+    g.fillStyle = vg; g.fillRect(0, 0, W, H);
+  }
+
+  function drawPud(T){
+    const g = px, r = pc.getBoundingClientRect();
+    g.setTransform(2, 0, 0, 2, 0, 0); g.clearRect(0, 0, 260, 190);
+    g.save(); g.translate(130, 98 + Math.sin(T * 1.7) * 5); g.scale(3, 3);
+    const w = Math.sin(T * 2.6) * .04; g.scale(1 + w, 1 - w); g.rotate(Math.sin(T * 1.3) * .03);
+    const body = () => { g.beginPath(); g.moveTo(-36, 22); g.lineTo(-30, -12); g.quadraticCurveTo(0, -24, 30, -12); g.lineTo(36, 22); g.quadraticCurveTo(0, 32, -36, 22); g.closePath(); };
+    const bg = g.createLinearGradient(-36, 0, 36, 0); bg.addColorStop(0, '#f2a93a'); bg.addColorStop(.45, '#ffe6ab'); bg.addColorStop(1, '#e7962e');
+    body(); g.fillStyle = bg; g.fill(); g.strokeStyle = '#fff'; g.lineWidth = 2; g.lineJoin = 'round'; g.stroke();
+    g.beginPath(); g.moveTo(-29.4, -11); g.quadraticCurveTo(0, -22.8, 29.4, -11); g.lineTo(31.6, 0); g.quadraticCurveTo(27, 4, 22, 0); g.lineTo(14, -1); g.quadraticCurveTo(10, 6, 6, -1); g.lineTo(-4, -2); g.quadraticCurveTo(-8, 3, -12, -2); g.lineTo(-20, -2); g.quadraticCurveTo(-25.5, 5, -31.4, 0); g.closePath();
+    const ig = g.createRadialGradient(0, -4, 4, 0, -4, 40); ig.addColorStop(0, '#eb7f10'); ig.addColorStop(1, '#b8560c');
+    g.fillStyle = ig; g.fill();
+    g.fillStyle = 'rgba(255,214,140,.45)'; g.beginPath(); g.ellipse(-8, -8, 10, 2.5, -.2, 0, Math.PI * 2); g.fill();
+    const bl = (T % 3.3) < .12 ? .15 : 1, ax = Math.atan2(mpy - (r.top + r.height / 2), mpx - (r.left + r.width / 2)), ex = Math.cos(ax) * 2, ey = Math.sin(ax) * 2;
+    g.fillStyle = '#1a1006'; g.beginPath(); g.ellipse(-18 + ex, 12 + ey, 3.6, 3.6 * bl, 0, 0, Math.PI * 2); g.ellipse(18 + ex, 12 + ey, 3.6, 3.6 * bl, 0, 0, Math.PI * 2); g.fill();
+    if(bl > .5){ g.fillStyle = 'rgba(255,255,255,.85)'; g.beginPath(); g.ellipse(-19.4 + ex, 10.6 + ey, 1.1, 1.1, 0, 0, Math.PI * 2); g.ellipse(16.6 + ex, 10.6 + ey, 1.1, 1.1, 0, 0, Math.PI * 2); g.fill(); }
+    g.strokeStyle = '#000'; g.lineWidth = 1.6; g.lineCap = 'round'; g.lineJoin = 'round';
+    g.beginPath(); g.moveTo(-7, 19); g.quadraticCurveTo(-4.5, 21.5, -2, 19); g.quadraticCurveTo(0, 17.5, 2, 19); g.quadraticCurveTo(4.5, 21.5, 7, 19); g.stroke();
+    g.restore();
+  }
+
+  let last = 0;
+  function loop(ts){
+    requestAnimationFrame(loop);
+    if(!scr.classList.contains('active')){ last = ts; return; }
+    const T = ts / 1000, dt = Math.min(.05, last ? (ts - last) / 1000 : .016); last = ts;
+    drawBg(T, dt); drawPud(T);
+  }
+  requestAnimationFrame(loop);
+})();
 </script>
 </body>
 </html>
