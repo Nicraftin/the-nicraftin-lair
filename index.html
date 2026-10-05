@@ -1518,7 +1518,7 @@ let pfPaperEl = null, pfPaperOpen = false, pfUPrev = false, pfUHold = false, pfH
 const PF_BOOK_X = .44; // book centre (in tiles) on the floor of level 2
 function pfNearBook(){
   if(pfLevel !== 2 || !pf) return false;
-  return Math.abs(pf.x + PF_S / 2 - PF_BOOK_X) < 1 && pf.y + PF_S > pfH - 1;
+  const dx = pf.x + PF_S / 2 - PF_BOOK_X; return dx > -1 && dx < .75 && pf.y + PF_S > pfH - 1;
 }
 function pfPaperBuild(){
   let sd = 7; const rnd = () => { sd = (sd * 16807) % 2147483647; return (sd - 1) / 2147483646; };
@@ -1633,7 +1633,7 @@ function pfCaveSvg(){ // 4x2 tiles at 100 units/tile: the 3x2 room (x 0-300) plu
   const P = 24, ox = 150 - P * 2.5, oy = 100 - P * 2.5; // 5x5 engraved symbol: full border + centre pixel, centred on the 3x2 room, one seamless path
   const sym = `<path fill-rule="evenodd" d="M${ox} ${oy}h${P*5}v${P*5}h${-P*5}ZM${ox+P} ${oy+P}v${P*3}h${P*3}v${-P*3}ZM${ox+P*2} ${oy+P*2}h${P}v${P}h${-P}Z"/>`;
   return `<svg viewBox="0 0 400 200" width="100%" height="100%"><defs><clipPath id="pf-cv-c"><path d="${outline}"/></clipPath><radialGradient id="pf-cv-g" cx="37%" cy="50%" r="60%"><stop offset="0" stop-color="#1e2240"/><stop offset="1" stop-color="#14162a"/></radialGradient><filter id="pf-cv-b" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="9"/></filter></defs>` +
-    `<path d="${outline}" fill="#171a33"/><g clip-path="url(#pf-cv-c)">${d}<path d="M400 0V100H300V172Q300 200 272 200H28Q0 200 0 172V28Q0 0 28 0H300" fill="none" stroke="#000" stroke-width="18" opacity=".6" filter="url(#pf-cv-b)"/><g fill="#0a0b17" opacity=".45">${sym}</g></g></svg>`;
+    `<path d="${outline}" fill="#171a33"/><g clip-path="url(#pf-cv-c)">${d}<path d="M400 100H300V172Q300 200 272 200H28Q0 200 0 172V28Q0 0 28 0H400" fill="none" stroke="#000" stroke-width="18" opacity=".6" filter="url(#pf-cv-b)"/><g fill="#0a0b17" opacity=".45">${sym}</g></g></svg>`;
 }
 // (Re)draws everything inside the arena for the current pfLevel
 function pfBuildScene(){
@@ -1697,7 +1697,7 @@ function pfDraw(){
   pfEl.style.transform = `translate(${pf.x * pfT}px,${pf.y * pfT}px)`;
   if(pfSecretEls.length){
     const cx = pf.x + PF_S / 2, cy = pf.y + PF_S / 2;
-    if(PF_CAVITY.some(r => cx > r[0] && cx < r[2] && cy > r[1] && cy < r[3])){ pfSecretSeen = true; pfSecretEls.forEach(e => e.classList.add('show')); } else pfSecretEls.forEach(e => e.classList.remove('show'));
+    if(PF_CAVITY.some((r, i) => i === 0 ? (pf.x < r[2] && pf.x + PF_S > r[0] && pf.y < r[3] && pf.y + PF_S > r[1]) : (cx > r[0] && cx < r[2] && cy > r[1] && cy < r[3]))){ pfSecretSeen = true; pfSecretEls.forEach(e => e.classList.add('show')); } else pfSecretEls.forEach(e => e.classList.remove('show'));
   }
   if(pfHint){
     pfHint.style.transform = `translate(${pf.x * pfT + PF_S * pfT / 2 - pfHintS / 2}px,${pf.y * pfT - pfHintS - pfT * .15}px)`;
