@@ -139,6 +139,16 @@ input.code-input{ font-size:1.4rem; letter-spacing:.3em; text-align:center; text
 .aud-btn .mute-x{display:none;}
 .aud-btn.muted .mute-x{display:block;}
 .aud-btn.muted .wave{display:none;}
+.aud-flags{display:flex; align-items:center; gap:8px; width:0; margin:0 -8px 0 0; opacity:0; visibility:hidden; pointer-events:none; overflow:hidden; padding:3px 0; transition:width .25s ease, margin .25s ease, opacity .25s ease, visibility 0s linear .25s;}
+.aud-row.open .aud-flags{width:92px; margin:0; opacity:1; visibility:visible; pointer-events:auto; transition:width .25s ease, margin .25s ease, opacity .25s ease, visibility 0s;}
+.flag-btn{background:var(--panel2); border:2px solid transparent; border-radius:50%; width:38px; height:38px; padding:3px; display:flex; align-items:center; justify-content:center; cursor:pointer; flex:none; opacity:.55; transition:opacity .15s, border-color .15s, transform .15s;}
+.flag-btn svg{width:100%; height:100%; display:block; border-radius:50%;}
+.flag-btn:hover{opacity:.85;}
+.flag-btn.selected{opacity:1; border-color:var(--text); transform:scale(1.05);}
+#lang-btn{position:relative;}
+#lang-btn svg.cn{width:22px; height:22px;}
+#lang-badge{position:absolute; right:-3px; bottom:-3px; width:17px; height:17px; border-radius:50%; border:1.5px solid var(--panel2); overflow:hidden; background:var(--panel2); pointer-events:none;}
+#lang-badge svg{width:100%; height:100%; display:block; stroke:none;}
 #skip-btn{display:none; margin-top:20px; opacity:.6; font-size:.85rem; padding:10px 18px;}
 .light-row{display:flex; align-items:center; justify-content:center;}
 .maze-stage{width:380px; height:380px; max-width:100%; margin:0 auto; display:flex; align-items:center; justify-content:center;}
@@ -249,51 +259,52 @@ body:has(#screen-choose.active) #title-bg{display:block;}
 
 <div id="screen-choose" class="screen active">
   <canvas id="title-pud"></canvas>
-  <h1 id="title-h" aria-label="The Nicraftin Lair">The Nicraftin Lair</h1>
-  <div id="title-sub">A two player escape room</div>
+  <h1 id="title-h" data-i18n-aria="h1aria" aria-label="The Nicraftin Lair">The Nicraftin Lair</h1>
+  <div id="title-sub" data-i18n="sub">A two player escape room</div>
   <div class="row" id="role-row" style="margin-top:20px;">
-    <button class="role-btn" onclick="startHost()">Player 1<br><small>(hosts)</small></button>
-    <button class="role-btn" onclick="showJoin()">Player 2<br><small>(joins)</small></button>
+    <button class="role-btn" onclick="startHost()"><span data-i18n="p1">Player 1</span><br><small data-i18n="hosts">(hosts)</small></button>
+    <button class="role-btn" onclick="showJoin()"><span data-i18n="p2">Player 2</span><br><small data-i18n="joins">(joins)</small></button>
   </div>
   <div id="join-box" style="display:none; margin-top:20px;">
-    <button class="back-tri" aria-label="Back" onclick="hideJoin()"></button>
-    <div><input id="code-in" class="code-input" maxlength="4" placeholder="CODE"></div>
-    <button class="big-btn" onclick="startJoin()">Connect</button>
+    <button class="back-tri" data-i18n-aria="joinback" aria-label="Back" onclick="hideJoin()"></button>
+    <div><input id="code-in" class="code-input" maxlength="4" data-i18n-ph="joincode" placeholder="CODE"></div>
+    <button class="big-btn" data-i18n="joinconnect" onclick="startJoin()">Connect</button>
   </div>
   <div id="host-box" style="display:none; margin-top:20px;">
-    <button class="back-tri" aria-label="Back" onclick="hideHost()"></button>
-    <h1>Share this code</h1>
-    <p class="sub">Tell Player 2 to enter it.</p>
+    <button class="back-tri" data-i18n-aria="hostback" aria-label="Back" onclick="hideHost()"></button>
+    <h1 data-i18n="hostshare">Share this code</h1>
+    <p class="sub" data-i18n="hosttell">Tell Player 2 to enter it.</p>
     <div class="code-display" id="host-code">----</div>
-    <p class="sub">Waiting for them to connect…</p>
+    <p class="sub" data-i18n="hostwait">Waiting for them to connect…</p>
   </div>
   <div class="title-sec" id="title-sec">
-    <button class="big-btn" id="rc-open-btn" onclick="showRc()">Reconnect</button>
-    <button class="big-btn" id="info-open-btn" onclick="showInfo()">Info</button>
+    <button class="big-btn" id="rc-open-btn" data-i18n="rcopen" onclick="showRc()">Reconnect</button>
+    <button class="big-btn" id="info-open-btn" data-i18n="infoopen" onclick="showInfo()">Info</button>
   </div>
   <div id="rc-box" style="display:none; margin-top:20px;">
-    <button class="back-tri" aria-label="Back" onclick="hideRc()"></button>
-    <div><input id="rc-in" class="code-input" maxlength="4" placeholder="CODE"></div>
-    <button class="big-btn" onclick="doRejoin($('rc-in').value, $('connect-err'))">Connect</button>
+    <button class="back-tri" data-i18n-aria="rcback" aria-label="Back" onclick="hideRc()"></button>
+    <div><input id="rc-in" class="code-input" maxlength="4" data-i18n-ph="rccode" placeholder="CODE"></div>
+    <button class="big-btn" data-i18n="rcconnect" onclick="doRejoin($('rc-in').value, $('connect-err'))">Connect</button>
   </div>
   <div id="info-box" style="display:none;">
-    <h2>Welcome to the Nicraftin Lair!</h2>
-    <p>Hop on a voice call with a friend and try to beat this escape room as fast as you can.
-Communication is key, you will need to share information with each other constantly in order to beat this.
-Only talk though, because sending images or sharing your screen is not allowed, that defeats the whole purpose of the game.
-The expected time of completion is between 2 and 3 hours, so try to play this when you both have at least 3 hours available.</p>
-    <h2 class="disc">DISCLAIMER:</h2>
-    <p>While the game's code, visual art and sound effects were made with the help of AI, all of the songs, text and game design were fully human made.
-I'm sorry if that's a deal breaker. This project was only intended for my close friends, and otherwise would've taken months to finish.
+    <h2 data-i18n="infowelcome">Welcome to the Nicraftin Lair!</h2>
+    <p data-i18n="infop1">Hop on a voice call with a friend and try to beat this escape room as fast as you can.
+Communication is key, you will need to share information with each other constantly.
+Only talk though, because sending images or sharing your screen is not allowed.
+The expected time of completion is between 2 and 3 hours, progress doesn't save.</p>
+    <h2 class="disc" data-i18n="infodisc">DISCLAIMER:</h2>
+    <p data-i18n="infop2">The game's code, visual art and sound effects were made with the help of AI.
+BUT, all of the songs, text and game design were fully human made.
+I'm sorry if that's a deal breaker, but this was only intended for my close friends.
 With that being said, I hope you enjoy it. Good luck!</p>
-    <button class="big-btn" onclick="hideInfo()">Return</button>
+    <button class="big-btn" data-i18n="inforeturn" onclick="hideInfo()">Return</button>
   </div>
   <div class="err" id="connect-err"></div>
 </div>
 
 <div id="screen-ready" class="screen">
-  <button id="ready-btn" class="big-btn" onclick="pressReady()">Ready</button>
-  <div id="waiting-text" class="waiting" style="display:none;">Waiting for other player…</div>
+  <button id="ready-btn" class="big-btn" data-i18n="ready" onclick="pressReady()">Ready</button>
+  <div id="waiting-text" class="waiting" data-i18n="waiting" style="display:none;">Waiting for other player…</div>
 </div>
 
 <div id="screen-countdown" class="screen">
@@ -352,24 +363,31 @@ With that being said, I hope you enjoy it. Good luck!</p>
 
 <div id="audio-btns">
   <div class="aud-row" id="mus-row">
-    <input type="range" class="aud-slider" id="mus-slider" min="0" max="100" value="30" aria-label="Music volume" oninput="setMusicVol(this.value)">
-    <button class="aud-btn" id="mus-btn" onclick="toggleSlider('mus-row')" aria-label="Music volume"><svg viewBox="0 0 24 24"><path d="M9 18V5l11-2v13"/><circle class="fill" cx="6.5" cy="18" r="3"/><circle class="fill" cx="17.5" cy="16" r="3"/><path class="mute-x" d="M3 3l18 18"/></svg></button>
+    <input type="range" class="aud-slider" id="mus-slider" min="0" max="100" value="30" data-i18n-aria="musslider" aria-label="Music volume" oninput="setMusicVol(this.value)">
+    <button class="aud-btn" id="mus-btn" onclick="toggleSlider('mus-row')" data-i18n-aria="musbtn" aria-label="Music volume"><svg viewBox="0 0 24 24"><path d="M9 18V5l11-2v13"/><circle class="fill" cx="6.5" cy="18" r="3"/><circle class="fill" cx="17.5" cy="16" r="3"/><path class="mute-x" d="M3 3l18 18"/></svg></button>
   </div>
   <div class="aud-row" id="sfx-row">
-    <input type="range" class="aud-slider" id="sfx-slider" min="0" max="100" value="70" aria-label="SFX volume" oninput="setSfxVol(this.value)">
-    <button class="aud-btn" id="sfx-btn" onclick="toggleSlider('sfx-row')" aria-label="SFX volume"><svg viewBox="0 0 24 24"><path class="fill" d="M3 9.5h4l5-4v13l-5-4H3z"/><path class="wave" d="M15.5 9a4 4 0 0 1 0 6"/><path class="wave" d="M18.5 6.5a8 8 0 0 1 0 11"/><path class="mute-x" d="M16 9.5l5 5M21 9.5l-5 5"/></svg></button>
+    <input type="range" class="aud-slider" id="sfx-slider" min="0" max="100" value="70" data-i18n-aria="sfxslider" aria-label="SFX volume" oninput="setSfxVol(this.value)">
+    <button class="aud-btn" id="sfx-btn" onclick="toggleSlider('sfx-row')" data-i18n-aria="sfxbtn" aria-label="SFX volume"><svg viewBox="0 0 24 24"><path class="fill" d="M3 9.5h4l5-4v13l-5-4H3z"/><path class="wave" d="M15.5 9a4 4 0 0 1 0 6"/><path class="wave" d="M18.5 6.5a8 8 0 0 1 0 11"/><path class="mute-x" d="M16 9.5l5 5M21 9.5l-5 5"/></svg></button>
+  </div>
+  <div class="aud-row" id="lang-row">
+    <div class="aud-flags" id="lang-flags">
+      <button class="flag-btn" id="lang-en" onclick="setLang('en')" aria-label="English" title="English"><svg viewBox="0 0 30 30" aria-hidden="true"><defs><clipPath id="ca"><circle cx="15" cy="15" r="15"/></clipPath></defs><g clip-path="url(#ca)"><svg x="-3" y="0" width="45" height="30" viewBox="0 0 60 30" preserveAspectRatio="none"><rect width="60" height="30" fill="#B22234"/><rect y="2.308" width="60" height="2.308" fill="#fff"/><rect y="6.923" width="60" height="2.308" fill="#fff"/><rect y="11.538" width="60" height="2.308" fill="#fff"/><rect y="16.154" width="60" height="2.308" fill="#fff"/><rect y="20.769" width="60" height="2.308" fill="#fff"/><rect y="25.385" width="60" height="2.308" fill="#fff"/><rect width="26" height="16.15" fill="#3C3B6E"/><circle cx="3" cy="3" r="1" fill="#fff"/><circle cx="3" cy="7.5" r="1" fill="#fff"/><circle cx="3" cy="12" r="1" fill="#fff"/><circle cx="8" cy="3" r="1" fill="#fff"/><circle cx="8" cy="7.5" r="1" fill="#fff"/><circle cx="8" cy="12" r="1" fill="#fff"/><circle cx="13" cy="3" r="1" fill="#fff"/><circle cx="13" cy="7.5" r="1" fill="#fff"/><circle cx="13" cy="12" r="1" fill="#fff"/><circle cx="18" cy="3" r="1" fill="#fff"/><circle cx="18" cy="7.5" r="1" fill="#fff"/><circle cx="18" cy="12" r="1" fill="#fff"/><circle cx="23" cy="3" r="1" fill="#fff"/><circle cx="23" cy="7.5" r="1" fill="#fff"/><circle cx="23" cy="12" r="1" fill="#fff"/></svg></g></svg></button>
+      <button class="flag-btn" id="lang-pt" onclick="setLang('pt')" aria-label="Português" title="Português"><svg viewBox="0 0 30 30" aria-hidden="true"><defs><clipPath id="cb"><circle cx="15" cy="15" r="15"/></clipPath></defs><g clip-path="url(#cb)"><rect width="30" height="30" fill="#009C3B"/><path d="M15 4.5L28 15L15 25.5L2 15Z" fill="#FFDF00"/><circle cx="15" cy="15" r="5.6" fill="#002776"/><path d="M9.7 13.6C13 12.6 17.2 13.2 20.3 16" fill="none" stroke="#fff" stroke-width="1"/></g></svg></button>
+    </div>
+    <button class="aud-btn" id="lang-btn" onclick="toggleSlider('lang-row')" data-i18n-aria="langbtn" aria-label="Language"><svg class="cn" viewBox="0 0 24 24"><path d="M12 2.5v2.5M4.5 7.5h15M17 8c-.9 5-5 9.5-11.5 12M8 8c1.6 5 6.200 9.500 12 12"/></svg><span id="lang-badge"></span></button>
   </div>
 </div>
 
 <div id="dc-overlay">
   <div id="dc-title"></div>
   <div id="dc-other" style="display:none;">
-    <p class="sub">Reconnect code</p>
+    <p class="sub" data-i18n="dccodelabel">Reconnect code</p>
     <div class="code-display" id="dc-code">----</div>
   </div>
   <div id="dc-me" style="display:none;">
-    <div><input id="dc-in" class="code-input" maxlength="4" placeholder="CODE"></div>
-    <button class="big-btn" onclick="doRejoin($('dc-in').value, $('dc-err'))">Reconnect</button>
+    <div><input id="dc-in" class="code-input" maxlength="4" data-i18n-ph="dccode" placeholder="CODE"></div>
+    <button class="big-btn" data-i18n="dcreconnect" onclick="doRejoin($('dc-in').value, $('dc-err'))">Reconnect</button>
     <div class="err" id="dc-err"></div>
   </div>
 </div>
@@ -743,6 +761,67 @@ setInterval(() => MUS.replay(), 5000);
 function toggleSlider(id){ $(id).classList.toggle('open'); }
 function setMusicVol(v){ MUS.setVol(v / 100); $('mus-btn').classList.toggle('muted', +v === 0); }
 function setSfxVol(v){ SFX.setVol(v / 100); $('sfx-btn').classList.toggle('muted', +v === 0); }
+// ---------- Language selector ----------
+const LANG_BADGES = {"en": "<svg viewBox=\"0 0 30 30\" aria-hidden=\"true\"><defs><clipPath id=\"cx\"><circle cx=\"15\" cy=\"15\" r=\"15\"/></clipPath></defs><g clip-path=\"url(#cx)\"><svg x=\"-3\" y=\"0\" width=\"45\" height=\"30\" viewBox=\"0 0 60 30\" preserveAspectRatio=\"none\"><rect width=\"60\" height=\"30\" fill=\"#B22234\"/><rect y=\"2.308\" width=\"60\" height=\"2.308\" fill=\"#fff\"/><rect y=\"6.923\" width=\"60\" height=\"2.308\" fill=\"#fff\"/><rect y=\"11.538\" width=\"60\" height=\"2.308\" fill=\"#fff\"/><rect y=\"16.154\" width=\"60\" height=\"2.308\" fill=\"#fff\"/><rect y=\"20.769\" width=\"60\" height=\"2.308\" fill=\"#fff\"/><rect y=\"25.385\" width=\"60\" height=\"2.308\" fill=\"#fff\"/><rect width=\"26\" height=\"16.15\" fill=\"#3C3B6E\"/><circle cx=\"3\" cy=\"3\" r=\"1\" fill=\"#fff\"/><circle cx=\"3\" cy=\"7.5\" r=\"1\" fill=\"#fff\"/><circle cx=\"3\" cy=\"12\" r=\"1\" fill=\"#fff\"/><circle cx=\"8\" cy=\"3\" r=\"1\" fill=\"#fff\"/><circle cx=\"8\" cy=\"7.5\" r=\"1\" fill=\"#fff\"/><circle cx=\"8\" cy=\"12\" r=\"1\" fill=\"#fff\"/><circle cx=\"13\" cy=\"3\" r=\"1\" fill=\"#fff\"/><circle cx=\"13\" cy=\"7.5\" r=\"1\" fill=\"#fff\"/><circle cx=\"13\" cy=\"12\" r=\"1\" fill=\"#fff\"/><circle cx=\"18\" cy=\"3\" r=\"1\" fill=\"#fff\"/><circle cx=\"18\" cy=\"7.5\" r=\"1\" fill=\"#fff\"/><circle cx=\"18\" cy=\"12\" r=\"1\" fill=\"#fff\"/><circle cx=\"23\" cy=\"3\" r=\"1\" fill=\"#fff\"/><circle cx=\"23\" cy=\"7.5\" r=\"1\" fill=\"#fff\"/><circle cx=\"23\" cy=\"12\" r=\"1\" fill=\"#fff\"/></svg></g></svg>", "pt": "<svg viewBox=\"0 0 30 30\" aria-hidden=\"true\"><defs><clipPath id=\"cy\"><circle cx=\"15\" cy=\"15\" r=\"15\"/></clipPath></defs><g clip-path=\"url(#cy)\"><rect width=\"30\" height=\"30\" fill=\"#009C3B\"/><path d=\"M15 4.5L28 15L15 25.5L2 15Z\" fill=\"#FFDF00\"/><circle cx=\"15\" cy=\"15\" r=\"5.6\" fill=\"#002776\"/><path d=\"M9.7 13.6C13 12.6 17.2 13.2 20.3 16\" fill=\"none\" stroke=\"#fff\" stroke-width=\"1\"/></g></svg>"};
+const I18N = {
+  doctitle: ["The Nicraftin Lair", "placeholder 1"],
+  h1: ["The Nicraftin Lair", "placeholder 2"],
+  h1aria: ["The Nicraftin Lair", "placeholder 3"],
+  sub: ["A two player escape room", "placeholder 4"],
+  p1: ["Player 1", "placeholder 5"],
+  hosts: ["(hosts)", "placeholder 6"],
+  p2: ["Player 2", "placeholder 7"],
+  joins: ["(joins)", "placeholder 8"],
+  rcopen: ["Reconnect", "placeholder 9"],
+  infoopen: ["Info", "placeholder 10"],
+  joinback: ["Back", "placeholder 11"],
+  joincode: ["CODE", "placeholder 12"],
+  joinconnect: ["Connect", "placeholder 13"],
+  joinerr4: ["Enter the 4-character code.", "placeholder 14"],
+  joinerrconn: ["Could not connect — check the code.", "placeholder 15"],
+  joinerrpeer: ["Connection error: ", "placeholder 16: "],
+  hostback: ["Back", "placeholder 17"],
+  hostshare: ["Share this code", "placeholder 18"],
+  hosttell: ["Tell Player 2 to enter it.", "placeholder 19"],
+  hostwait: ["Waiting for them to connect…", "placeholder 20"],
+  hosterr: ["Connection error: ", "placeholder 21: "],
+  rcback: ["Back", "placeholder 22"],
+  rccode: ["CODE", "placeholder 23"],
+  rcconnect: ["Connect", "placeholder 24"],
+  rcerr4: ["Enter the 4-character code.", "placeholder 25"],
+  rcerrto: ["Could not connect — check the code.", "placeholder 26"],
+  rcerrpeer: ["Could not connect — check the code.", "placeholder 27"],
+  infowelcome: ["Welcome to the Nicraftin Lair!", "placeholder 28"],
+  infop1: ["Hop on a voice call with a friend and try to beat this escape room as fast as you can.\nCommunication is key, you will need to share information with each other constantly.\nOnly talk though, because sending images or sharing your screen is not allowed.\nThe expected time of completion is between 2 and 3 hours, progress doesn't save.", "placeholder 29"],
+  infodisc: ["DISCLAIMER:", "placeholder 30"],
+  infop2: ["The game's code, visual art and sound effects were made with the help of AI.\nBUT, all of the songs, text and game design were fully human made.\nI'm sorry if that's a deal breaker, but this was only intended for my close friends.\nWith that being said, I hope you enjoy it. Good luck!", "placeholder 31"],
+  inforeturn: ["Return", "placeholder 32"],
+  ready: ["Ready", "placeholder 33"],
+  waiting: ["Waiting for other player…", "placeholder 34"],
+  go: ["Go!", "placeholder 35"],
+  musslider: ["Music volume", "placeholder 36"],
+  musbtn: ["Music volume", "placeholder 37"],
+  sfxslider: ["SFX volume", "placeholder 38"],
+  sfxbtn: ["SFX volume", "placeholder 39"],
+  langbtn: ["Language", "placeholder 40"],
+  dcother: ["The other player disconnected", "placeholder 41"],
+  dcme: ["You disconnected", "placeholder 42"],
+  dccodelabel: ["Reconnect code", "placeholder 43"],
+  dccode: ["CODE", "placeholder 44"],
+  dcreconnect: ["Reconnect", "placeholder 45"]
+};
+function T(k){ const e = I18N[k]; return e ? (curLang === 'pt' ? e[1] : e[0]) : k; }
+function applyLang(){
+  document.querySelectorAll('[data-i18n]').forEach(e => { e.textContent = T(e.dataset.i18n); });
+  document.querySelectorAll('[data-i18n-ph]').forEach(e => { e.placeholder = T(e.dataset.i18nPh); });
+  document.querySelectorAll('[data-i18n-aria]').forEach(e => { e.setAttribute('aria-label', T(e.dataset.i18nAria)); });
+  document.title = T('doctitle');
+  if(window.rebuildTitle) window.rebuildTitle();
+}
+let curLang = 'en';
+function detectLang(){ try{ const l = (navigator.languages && navigator.languages.length ? navigator.languages : [navigator.language || 'en']); return /^pt/i.test(l[0] || '') ? 'pt' : 'en'; }catch(e){ return 'en'; } }
+function setLang(l){ curLang = (l === 'pt') ? 'pt' : 'en'; $('lang-en').classList.toggle('selected', curLang === 'en'); $('lang-pt').classList.toggle('selected', curLang === 'pt'); $('lang-badge').innerHTML = LANG_BADGES[curLang]; $('lang-en').setAttribute('aria-pressed', curLang === 'en'); $('lang-pt').setAttribute('aria-pressed', curLang === 'pt'); applyLang(); }
+setLang(detectLang());
 
 function startHost(){
   myRole = 1;
@@ -757,7 +836,7 @@ function attemptHost(){
   peer.on('connection', c => { conn = c; wireConn(); });
   peer.on('error', err => {
     if(err.type === 'unavailable-id'){ attemptHost(); }
-    else { $('connect-err').textContent = 'Connection error: ' + err.type; }
+    else { $('connect-err').textContent = T('hosterr') + err.type; }
   });
 }
 
@@ -769,15 +848,15 @@ function showJoin(){ hideChoices(); $('join-box').style.display = 'block'; }
 function hideJoin(){ SFX.back(); $('join-box').style.display = 'none'; $('role-row').style.display = ''; $('title-sec').style.display = ''; $('connect-err').textContent = ''; }
 function startJoin(){
   const code = $('code-in').value.trim().toUpperCase();
-  if(code.length !== 4){ $('connect-err').textContent = 'Enter the 4-character code.'; return; }
+  if(code.length !== 4){ $('connect-err').textContent = T('joinerr4'); return; }
   myRole = 2;
   peer = new Peer();
   peer.on('open', () => {
     conn = peer.connect('2pesc-' + code);
     conn.on('open', () => wireConn());
-    conn.on('error', () => { $('connect-err').textContent = 'Could not connect — check the code.'; });
+    conn.on('error', () => { $('connect-err').textContent = T('joinerrconn'); });
   });
-  peer.on('error', err => { $('connect-err').textContent = 'Connection error: ' + err.type; });
+  peer.on('error', err => { $('connect-err').textContent = T('joinerrpeer') + err.type; });
 }
 
 function wireConn(){
@@ -828,12 +907,12 @@ function enterPause(mode){
   clearInterval(hbTimer);
   $('dc-overlay').style.display = 'flex';
   if(mode === 'other'){
-    $('dc-title').textContent = 'The other player disconnected';
+    $('dc-title').textContent = T('dcother');
     $('dc-other').style.display = 'block'; $('dc-me').style.display = 'none';
     $('dc-code').textContent = '----';
     listenRejoin();
   }else{
-    $('dc-title').textContent = 'You disconnected';
+    $('dc-title').textContent = T('dcme');
     $('dc-other').style.display = 'none'; $('dc-me').style.display = 'block';
     $('dc-err').textContent = '';
   }
@@ -861,14 +940,14 @@ function showRc(){ hideChoices(); $('rc-box').style.display = 'block'; }
 function hideRc(){ SFX.back(); $('rc-box').style.display = 'none'; $('role-row').style.display = ''; $('title-sec').style.display = ''; $('connect-err').textContent = ''; }
 function doRejoin(code, errEl){
   code = code.trim().toUpperCase();
-  if(code.length !== 4){ errEl.textContent = 'Enter the 4-character code.'; return; }
+  if(code.length !== 4){ errEl.textContent = T('rcerr4'); return; }
   errEl.textContent = '';
   if(peer){ try{ peer.destroy(); }catch(e){} }
   const p = peer = new Peer();
   let done = false;
   const fail = msg => { if(done) return; done = true; errEl.textContent = msg; };
-  const to = setTimeout(() => fail('Could not connect — check the code.'), 12000);
-  p.on('error', () => { clearTimeout(to); fail('Could not connect — check the code.'); });
+  const to = setTimeout(() => fail(T('rcerrto')), 12000);
+  p.on('error', () => { clearTimeout(to); fail(T('rcerrpeer')); });
   p.on('open', () => {
     const c = p.connect('2pesc-rc-' + code);
     c.on('open', () => c.send({type:'rejoin', payload:{role:myRole, inGame:started}}));
@@ -975,7 +1054,7 @@ function tryStart(){
 
 function runCountdown(){
   show('screen-countdown');
-  const steps = ['3','2','1','Go!'];
+  const steps = ['3','2','1',T('go')];
   let i = 0;
   $('countdown-num').textContent = steps[i]; SFX.count(i);
   const t = setInterval(() => {
@@ -2702,14 +2781,20 @@ buildSubmitPreview();
   const bgc = document.getElementById('title-bg-c'), pc = document.getElementById('title-pud'), scr = document.getElementById('screen-choose');
   const bx = bgc.getContext('2d'), px = pc.getContext('2d');
   // title letters
-  const th = document.getElementById('title-h'); th.textContent = '';
+  const th = document.getElementById('title-h');
+  let lastTitle = null;
+  function buildTitle(){
+  const tt = T('h1'); if(tt === lastTitle) return; lastTitle = tt;
+  th.textContent = '';
   let li = 0;
-  'The Nicraftin Lair'.split(' ').forEach((w, wi) => {
+  tt.split(' ').forEach((w, wi) => {
     if(wi) { const sp = document.createElement('span'); sp.className = 'tsp'; sp.setAttribute('aria-hidden','true'); th.appendChild(sp); th.appendChild(document.createTextNode(' ')); }
     const ws = document.createElement('span'); ws.className = 'tw'; ws.setAttribute('aria-hidden','true');
     w.split('').forEach(ch => { const l = document.createElement('span'); l.className = 'tl'; l.textContent = ch; l.style.setProperty('--i', li++); ws.appendChild(l); });
     th.appendChild(ws);
   });
+  }
+  buildTitle(); window.rebuildTitle = buildTitle;
   let W = 0, H = 0, dpr = 1, mx = .5, my = .5, mpx = 0, mpy = 0;
   let stars = [], embers = [];
   function rnd(a, b){ return a + Math.random() * (b - a); }
