@@ -244,6 +244,10 @@ body:has(#screen-choose.active) #title-bg{display:block;}
 #screen-choose #info-box h2.disc{color:#ff7a8c;}
 #screen-choose #info-box .big-btn{margin-top:18px;}
 #screen-choose #info-box p{margin:0 0 18px; color:#e6e0ff; white-space:pre-line; text-align:center;}
+#best-time{display:none; margin-top:22px; text-align:center; color:#c9b8ff; font-size:.85rem; letter-spacing:.14em; text-transform:uppercase; opacity:.9;}
+#best-time.on{display:block;}
+#title-sec[style*="none"] + #best-time{display:none;} /* hidden together with the buttons while Join / Host / Reconnect / Info panels are open */
+#best-time b{display:inline-block; margin-left:.6em; color:#ffd37a; font-family:ui-monospace,Menlo,Consolas,monospace; font-size:1.05rem; letter-spacing:.06em; text-shadow:0 0 12px rgba(255,190,90,.45);}
 .back-tri{display:block; position:absolute; top:10px; left:10px; width:41px; height:41px; margin:0; padding:0; border:none; background:transparent; cursor:pointer;}
 .back-tri::before{content:""; position:absolute; top:12px; left:12px; width:17px; height:17px; background:#c9b8ff; clip-path:polygon(0 50%,100% 0,100% 100%); transition:background .18s ease, transform .18s ease;}
 .back-tri:hover::before{background:#fff; transform:translateX(-3px);}
@@ -284,6 +288,7 @@ body:has(#screen-choose.active) #title-bg{display:block;}
     <button class="big-btn" id="rc-open-btn" data-i18n="rcopen" onclick="showRc()">Reconnect</button>
     <button class="big-btn" id="info-open-btn" data-i18n="infoopen" onclick="showInfo()">Info</button>
   </div>
+  <div id="best-time"><span data-i18n="besttime">Best time</span><b id="best-time-v"></b></div>
   <div id="rc-box" style="display:none; margin-top:20px;">
     <button class="back-tri" data-i18n-aria="rcback" aria-label="Back" onclick="hideRc()"></button>
     <div><input id="rc-in" class="code-input" maxlength="4" data-i18n-ph="rccode" placeholder="CODE"></div>
@@ -474,6 +479,12 @@ const $ = id => document.getElementById(id);
 function show(id){ if(id !== 'screen-choose' && MUS.menu()) MUS.fadeOut(); document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); $(id).classList.add('active'); }
 function makeCode(){ return Array.from({length:4}, ()=>ALPHA[Math.floor(Math.random()*ALPHA.length)]).join(''); }
 
+// ---------- Saved settings (volume + language + best time) ----------
+const LS = {
+  get(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } },
+  set(k, v){ try{ localStorage.setItem(k, v); }catch(e){} }
+};
+
 // ---------- SFX engine (WebAudio, fully synthesized: no audio files) ----------
 // Unlocks itself on the first tap/click/key, skips silently while a state is being restored, rate-limits & caps voices.
 let dragPrevKey = null, sfxOn = true, sfxVol = .7;
@@ -578,9 +589,21 @@ const SFX = (() => {
     const t = e.target && e.target.closest && e.target.closest('.role-btn, #screen-choose .big-btn, #ready-btn, #dc-overlay .big-btn');
     if(t && !t.closest('#info-box') && !(t.id === 'ready-btn' && myRole && ready[3 - myRole])) S.ui();
   }, true);
+  document.addEventListener('pointerover', e => {
+    if(e.pointerType && e.pointerType !== 'mouse') return; // touch "hover" fires on tap and would double up with the click sound
+    const t = e.target && e.target.closest && e.target.closest('#screen-choose .role-btn, #screen-choose .big-btn');
+    if(!t || t.disabled || t.closest('#info-box') || (e.relatedTarget && t.contains(e.relatedTarget))) return;
+    S.hover(t.classList.contains('role-btn'));
+  }, true);
   const S = {
     setVol(v){ sfxVol = v; sfxOn = v > 0; if(master) master.gain.value = v * 1.6; },
     ui(){ if(!can('ui', 40)) return; tone(700, .06, {type:'triangle', vol:.18}); tone(1050, .05, {at:.03, vol:.12}); },
+    // subtle menu hover: the big Player 1 / Player 2 buttons get a soft shimmer to match their glint sweep, the small ones a light tick
+    hover(big){
+      if(!can('menuhover', 50)) return;
+      if(big){ noise(.26, {f:1800, to:6500, q:1.4, vol:.03, a:.08}); tone(1320, .09, {vol:.045, a:.006}); tone(1980, .11, {at:.045, vol:.03, a:.006}); }
+      else tone(1180, .05, {type:'triangle', vol:.05, a:.004});
+    },
     connect(){ if(!can('connect', 300)) return; bell(659, 0, .2); bell(988, .12, .2); },
     count(i){ if(!can()) return; if(i < 3){ tone(520, .14, {type:'triangle', vol:.28}); } else { tone(1040, .14, {type:'triangle', vol:.28}); } },
     // Player 1's buttons all look identical -> one identical sound
@@ -763,18 +786,24 @@ const MUS = (() => {
   };
 })();
 setInterval(() => MUS.replay(), 5000);
+// restore the saved volumes before the menu music starts, so it fades in at the saved level
+(() => {
+  const m = LS.get('nl_musvol'), sv = LS.get('nl_sfxvol');
+  if(m !== null && m !== '' && isFinite(+m)){ const v = Math.max(0, Math.min(100, +m)); $('mus-slider').value = v; setMusicVol(v); }
+  if(sv !== null && sv !== '' && isFinite(+sv)){ const v = Math.max(0, Math.min(100, +sv)); $('sfx-slider').value = v; setSfxVol(v); }
+})();
 MUS.play(0);
 ['pointerdown','keydown','touchstart'].forEach(ev => window.addEventListener(ev, function f(){ window.removeEventListener(ev, f, true); MUS.unlock(); }, true));
 function toggleSlider(id){ $(id).classList.toggle('open'); }
-function setMusicVol(v){ MUS.setVol(v / 100); $('mus-btn').classList.toggle('muted', +v === 0); }
-function setSfxVol(v){ SFX.setVol(v / 100); $('sfx-btn').classList.toggle('muted', +v === 0); }
+function setMusicVol(v){ MUS.setVol(v / 100); $('mus-btn').classList.toggle('muted', +v === 0); LS.set('nl_musvol', String(v)); }
+function setSfxVol(v){ SFX.setVol(v / 100); $('sfx-btn').classList.toggle('muted', +v === 0); LS.set('nl_sfxvol', String(v)); }
 // ---------- Language selector ----------
 const LANG_BADGES = {"en": "<svg viewBox=\"0 0 30 30\" aria-hidden=\"true\"><defs><clipPath id=\"cx\"><circle cx=\"15\" cy=\"15\" r=\"15\"/></clipPath></defs><g clip-path=\"url(#cx)\"><svg x=\"-3\" y=\"0\" width=\"45\" height=\"30\" viewBox=\"0 0 60 30\" preserveAspectRatio=\"none\"><rect width=\"60\" height=\"30\" fill=\"#B22234\"/><rect y=\"2.308\" width=\"60\" height=\"2.308\" fill=\"#fff\"/><rect y=\"6.923\" width=\"60\" height=\"2.308\" fill=\"#fff\"/><rect y=\"11.538\" width=\"60\" height=\"2.308\" fill=\"#fff\"/><rect y=\"16.154\" width=\"60\" height=\"2.308\" fill=\"#fff\"/><rect y=\"20.769\" width=\"60\" height=\"2.308\" fill=\"#fff\"/><rect y=\"25.385\" width=\"60\" height=\"2.308\" fill=\"#fff\"/><rect width=\"26\" height=\"16.15\" fill=\"#3C3B6E\"/><circle cx=\"3\" cy=\"3\" r=\"1\" fill=\"#fff\"/><circle cx=\"3\" cy=\"7.5\" r=\"1\" fill=\"#fff\"/><circle cx=\"3\" cy=\"12\" r=\"1\" fill=\"#fff\"/><circle cx=\"8\" cy=\"3\" r=\"1\" fill=\"#fff\"/><circle cx=\"8\" cy=\"7.5\" r=\"1\" fill=\"#fff\"/><circle cx=\"8\" cy=\"12\" r=\"1\" fill=\"#fff\"/><circle cx=\"13\" cy=\"3\" r=\"1\" fill=\"#fff\"/><circle cx=\"13\" cy=\"7.5\" r=\"1\" fill=\"#fff\"/><circle cx=\"13\" cy=\"12\" r=\"1\" fill=\"#fff\"/><circle cx=\"18\" cy=\"3\" r=\"1\" fill=\"#fff\"/><circle cx=\"18\" cy=\"7.5\" r=\"1\" fill=\"#fff\"/><circle cx=\"18\" cy=\"12\" r=\"1\" fill=\"#fff\"/><circle cx=\"23\" cy=\"3\" r=\"1\" fill=\"#fff\"/><circle cx=\"23\" cy=\"7.5\" r=\"1\" fill=\"#fff\"/><circle cx=\"23\" cy=\"12\" r=\"1\" fill=\"#fff\"/></svg></g></svg>", "pt": "<svg viewBox=\"0 0 30 30\" aria-hidden=\"true\"><defs><clipPath id=\"cy\"><circle cx=\"15\" cy=\"15\" r=\"15\"/></clipPath></defs><g clip-path=\"url(#cy)\"><rect width=\"30\" height=\"30\" fill=\"#009C3B\"/><path d=\"M15 4.5L28 15L15 25.5L2 15Z\" fill=\"#FFDF00\"/><circle cx=\"15\" cy=\"15\" r=\"5.6\" fill=\"#002776\"/><path d=\"M9.7 13.6C13 12.6 17.2 13.2 20.3 16\" fill=\"none\" stroke=\"#fff\" stroke-width=\"1\"/></g></svg>"};
 const I18N = {
   doctitle: ["The Nicraftin Lair", "A Toca do Nicraftin"],
   h1: ["The Nicraftin Lair", "A Toca do Nicraftin"],
   h1aria: ["The Nicraftin Lair", "A Toca do Nicraftin"],
-  sub: ["A two player escape room", "Uma escape room de dois jogadores"],
+  sub: ["A two player escape room", "Uma escape room para dois jogadores"],
   p1: ["Player 1", "Jogador 1"],
   hosts: ["(hosts)", "(hosteia)"],
   p2: ["Player 2", "Jogador 2"],
@@ -785,7 +814,7 @@ const I18N = {
   joincode: ["CODE", "ABCD"],
   joinconnect: ["Connect", "Connectar"],
   joinerr4: ["Enter the 4-character code.", "Digite o código de 4 dígitos"],
-  joinerrconn: ["Could not connect — check the code.", "Não deu pra conectar — verifique o código."],
+  joinerrconn: ["Could not connect, check the code.", "Não deu pra conectar, verifique o código."],
   joinerrpeer: ["Connection error: ", "Erro de conexão: "],
   hostback: ["Back", "Voltar"],
   hostshare: ["Share this code", "Manda o código"],
@@ -796,8 +825,8 @@ const I18N = {
   rccode: ["CODE", "ABCD"],
   rcconnect: ["Connect", "Conectar"],
   rcerr4: ["Enter the 4-character code.", "Digite o código de 4 dígitos"],
-  rcerrto: ["Could not connect — check the code.", "Não deu pra conectar — verifique o código."],
-  rcerrpeer: ["Could not connect — check the code.", "Não deu pra conectar — verifique o código."],
+  rcerrto: ["Could not connect, check the code.", "Não deu pra conectar, verifique o código."],
+  rcerrpeer: ["Could not connect, check the code.", "Não deu pra conectar, verifique o código."],
   infowelcome: ["Welcome to the Nicraftin Lair!", "Seja bem-vindo à Toca do Nicraftin"],
   infop1: ["Hop on a voice call with a friend and try to beat this escape room as fast as you can.\nCommunication is key, you will need to share information with each other constantly.\nOnly talk though, because sending images or sharing your screen is not allowed.\nThe expected time of completion is between 2 and 3 hours, progress doesn't save.", "Entre numa chamada de voz com um amigo e tente completar o jogo o mais rápido possível.\nComunicação é chave, você vai precisar compartilhar informações constantemente.\nMas apenas por voz, pois mandar imagens ou passar tela não é permitido.\nO tempo estimado para completar o jogo é de 2 a 3 horas, o progresso não salva"],
   infodisc: ["DISCLAIMER:", "AVISO:"],
@@ -831,6 +860,7 @@ const I18N = {
   remaining: ["remaining", "restantes"],
   stoptimer: ["Stop the timer", "Parar o relógio"],
   congrats: ["Congratulations, you win!", "Parabéns, você venceu!"],
+  besttime: ["Best time", "Melhor tempo"],
   credit1: ["A game made by Nicraftin", "Um jogo feito por Nicraftin"],
   credit2: ["Thank you for playing!", "Obrigado por jogar!"],
   youwin: ["You win!", "Você venceu!"]
@@ -844,8 +874,8 @@ function applyLang(){
   if(window.rebuildTitle) window.rebuildTitle();
 }
 let curLang = 'en';
-function setLang(l){ curLang = (l === 'pt') ? 'pt' : 'en'; $('lang-en').classList.toggle('selected', curLang === 'en'); $('lang-pt').classList.toggle('selected', curLang === 'pt'); $('lang-badge').innerHTML = LANG_BADGES[curLang]; $('lang-en').setAttribute('aria-pressed', curLang === 'en'); $('lang-pt').setAttribute('aria-pressed', curLang === 'pt'); applyLang(); }
-setLang('en');
+function setLang(l){ curLang = (l === 'pt') ? 'pt' : 'en'; $('lang-en').classList.toggle('selected', curLang === 'en'); $('lang-pt').classList.toggle('selected', curLang === 'pt'); $('lang-badge').innerHTML = LANG_BADGES[curLang]; $('lang-en').setAttribute('aria-pressed', curLang === 'en'); $('lang-pt').setAttribute('aria-pressed', curLang === 'pt'); LS.set('nl_lang', curLang); applyLang(); }
+setLang(LS.get('nl_lang') === 'pt' ? 'pt' : 'en');
 
 function startHost(){
   myRole = 1;
@@ -2027,7 +2057,7 @@ const SP_MSG_PT = [
   "2 mortes, uma pra cada um, pode dividir",
   "Nossa, 3 mortes e quer mais?",
   "Agora 4 e subindo",
-  "Quer uma mãozinha? Como q conta 6 mortes com 1?",
+  "Quer uma mãozinha? N tem como contar 6 mortes com 1",
   "Pera, vcs tem 4 mãos pra contar? Tentem usá-las",
   "Eu mandava 7-1, mas faltou o 1",
   "8 mortes? Vamos virar esse número 90 graus",
@@ -2069,7 +2099,7 @@ const SP_MSG_PT = [
   "44, quaraquaqua!",
   "45 mortes, tô começando a me sentir mal por vcs",
   "46 eu, 0 vcs",
-  "47? isso � crise da meia-idade por acaso?",
+  "47? isso é crise da meia-idade por acaso?",
   "48, 3 packs da bola de neve que isso virou",
   "49 mortes, quem morreu 49 morre 50",
   "50 mortes, metade do caminho pra 100!",
@@ -2260,6 +2290,8 @@ function spPudStep(p, dt){
 }
 function spPudDraw(g, p, ship, T){
   if(p.dead > 1) return;
+  // where the ship is on the canvas right now (device space), taken before the pudding's own transforms are applied
+  const gz = (ship && g.getTransform) ? g.getTransform().transformPoint({x: ship.x, y: ship.y}) : null;
   const dd = p.dead >= 0, k = dd ? Math.min(1, p.dead) : 0;
   g.save(); g.translate(p.x, p.y + Math.sin(T * 1.7) * 3); g.scale(3, 3);
   const an = p.anger === undefined ? -1 : p.anger, ak = an < 0 ? 0 : (an < .3 ? an / .3 : an > 2.1 ? Math.max(0, (2.6 - an) / .5) : 1);
@@ -2281,7 +2313,14 @@ function spPudDraw(g, p, ship, T){
   g.fillStyle = 'rgba(255,214,140,.45)'; g.beginPath(); g.ellipse(-8, -8, 10, 2.5, -.2, 0, Math.PI * 2); g.fill();
   if(ak > 0){ body(); g.fillStyle = 'rgba(255,32,32,' + ((.5 + .1 * Math.sin(T * 24)) * ak) + ')'; g.fill(); }
   const bl = (T % 3.3) < .12 ? .15 : 1;
-  const eyc = sx => { let dx = (ship.x - (p.x + sx * 3)) / 3, dy = (ship.y - (p.y + 36 * 3)) / 3; const d = Math.hypot(dx, dy); if(d > 1.4){ dx *= 1.4 / d; dy *= 1.4 / d; } return [dx, dy]; }, e1 = eyc(-18), e2 = eyc(18);
+  // Gaze: converted into the face's own (bobbing / wobbling / 3x scaled) space, so it stays exact. Both pupils share one direction
+  // (parallel gaze), so they always point at the ship and never cross to look at each other.
+  let e1 = [0, 0];
+  if(gz){
+    const lp = g.getTransform().inverse().transformPoint(gz), vx = lp.x, vy = lp.y - 12, d = Math.hypot(vx, vy);
+    if(d > 1e-6){ const m = 1.9 * Math.min(1, d / 10); e1 = [vx / d * m, vy / d * m]; }
+  }
+  const e2 = e1;
   g.fillStyle = '#1a1006'; g.beginPath(); g.ellipse(-18, 12, 3.6, 3.6 * bl, 0, 0, Math.PI * 2); g.ellipse(18, 12, 3.6, 3.6 * bl, 0, 0, Math.PI * 2); g.fill();
   if(bl > .5){ g.fillStyle = 'rgba(255,255,255,.85)'; g.beginPath(); g.ellipse(-18 + e1[0], 12 + e1[1], 1.65, 1.65, 0, 0, Math.PI * 2); g.ellipse(18 + e2[0], 12 + e2[1], 1.65, 1.65, 0, 0, Math.PI * 2); g.fill(); }
   g.strokeStyle = '#000'; g.lineWidth = 1.6; g.lineCap = 'round'; g.lineJoin = 'round';
@@ -2454,7 +2493,7 @@ function spDraw(g, s){
   spShowWords(g.canvas.id.slice(-1), s.words || [], !!(s.dying || s.leaving));
   spTitle(g.canvas.id.slice(-1), s); spSfx(s); spBossFx(g, s);
   const at = (x, y, fn) => { g.save(); g.translate(x, y); g.scale(sc, sc); fn(); g.restore(); };
-  if(s.pud) spPudDraw(g, s.pud, s.ship, T);
+  if(s.pud) spPudDraw(g, s.pud, dy ? (dy.t >= .8 ? {x: W / 2, y: s.boss ? H - 100 : H / 2} : {x: dy.x, y: dy.y}) : s.ship, T); // eyes follow the ship, or where it is exploding / respawning
   for(const l of s.lasers) at(l.v ? l.p : W / 2, l.v ? H / 2 : l.p, () => {
     const hw = SP_LW / 2, R = l.v ? [-hw, -H / 2, 2 * hw, H] : [-W / 2, -hw, W, 2 * hw];
     if(l.t < 5){
@@ -2707,8 +2746,19 @@ function finVanish(){
     }
   }, 500);
 }
+function saveBest(ms){
+  if(!(ms > 0)) return;
+  const t = Math.floor(ms), old = +LS.get('nl_best');
+  if(!(old > 0) || t < old) LS.set('nl_best', String(t));
+}
+function showBest(){
+  const ms = +LS.get('nl_best');
+  if(!(ms > 0)) return;
+  $('best-time-v').textContent = fmtTime(ms); $('best-time').classList.add('on');
+}
+showBest();
 function finWin(ms){
-  if(finDone) return; finDone = true; timerStop = ms;
+  if(finDone) return; finDone = true; timerStop = ms; saveBest(ms);
   clearInterval(hbTimer); $('dc-overlay').style.display = 'none';
   finVanish(); SFX.win();
   const t = $('game-timer'); t.textContent = fmtTime(ms);
