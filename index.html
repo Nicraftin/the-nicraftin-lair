@@ -686,7 +686,8 @@ const SFX = (() => {
       noise(.5, {type:'lowpass', f:900, to:80, vol:.2, at:.4, a:.01});
       noise(.9, {type:'highpass', f:5000, to:1500, vol:.04, at:.25, a:.15}); },
     shipIn(){ if(!can('si', 150)) return; tone(200, .4, {to:900, vol:.15}); noise(.3, {f:600, to:3000, q:2, vol:.06}); },
-    bossHit(){ if(!can('bh', 60)) return; tone(420, .06, {type:'square', vol:.06, to:250, lp:1500}); },
+    // k (0..1) = how far into the last 50 health the boss is: the hit sound climbs in pitch, gets a bit louder and gains a bright overtone
+    bossHit(k){ if(!can('bh', 60)) return; k = k || 0; const m = 1 + k * 1.1; tone(420 * m, .06, {type:'square', vol:.06 + k * .02, to:250 * m, lp:1500 + k * 2500}); if(k > 0) tone(840 * m, .05, {type:'triangle', vol:k * .035}); },
     bossIn(){ if(!can('bi', 300)) return; noise(1.2, {type:'lowpass', f:200, to:500, vol:.3, a:.4}); tone(60, 1.5, {type:'sawtooth', vol:.15, lp:200, to:110}); },
     bossRoar(){ if(!can('br', 300)) return; noise(1.2, {f:400, to:150, q:1.5, vol:.3}); tone(90, 1.2, {type:'sawtooth', vol:.25, lp:500, to:55}); tone(93, 1.2, {type:'sawtooth', vol:.2, lp:500, to:57}); },
     bossDie(){ S.dramatic(); },
@@ -830,7 +831,7 @@ const I18N = {
   infowelcome: ["Welcome to the Nicraftin Lair!", "Seja bem-vindo à Toca do Nicraftin"],
   infop1: ["Hop on a voice call with a friend and try to beat this escape room as fast as you can.\nCommunication is key, you will need to share information with each other constantly.\nOnly talk though, because sending images or sharing your screen is not allowed.\nThe expected time of completion is between 2 and 3 hours, progress doesn't save.", "Entre numa chamada de voz com um amigo e tente completar o jogo o mais rápido possível.\nComunicação é chave, você vai precisar compartilhar informações constantemente.\nMas apenas por voz, pois mandar imagens ou passar tela não é permitido.\nO tempo estimado para completar o jogo é de 2 a 3 horas, o progresso não salva"],
   infodisc: ["DISCLAIMER:", "AVISO:"],
-  infop2: ["The game's code, visual art and sound effects were made with the help of AI.\nBUT, all of the songs, text and game design were fully human made.\nI'm sorry if that's a deal breaker, but this was only intended for my close friends.\nWith that being said, I hope you enjoy it. Good luck!", "O código, arte visual e efeitos sonoros do jogo foram feitos com ajuda de IA.\nMAS todas as músicas, texto e design de fases foram feitos SEM ajuda de IA.\nDesculpa! Esse jogo foi feito para amigos próximos e eu não queria ficar meses fazendo ele.\nDito isso, espero que você se divirta. Boa sorte!"],
+  infop2: ["The game's code, visual art and sound effects were made with the help of AI.\nBUT, all of the songs, text and game design were fully human made.\nI'm sorry if that's a deal breaker, but this was only intended for my close friends.\nWith that being said, I hope you enjoy it. Good luck!", "O código, arte visual e efeitos sonoros do jogo foram feitos com ajuda de IA.\nPORÉM, todas as músicas, texto e design de fases foram feitos SEM ajuda de IA.\nDesculpa! Esse jogo foi feito para amigos próximos e eu não queria ficar meses fazendo ele.\nDito isso, espero que você se divirta. Boa sorte!"],
   inforeturn: ["Return", "Retornar"],
   ready: ["Ready", "Pronto"],
   waiting: ["Waiting for other player…", "Esperando pelo outro jogador…"],
@@ -2171,7 +2172,7 @@ function spTitle(id, s){
   if(!b) return;
   const p = s.pud; let w = 100;
   if(p){ // bar covers one third of the boss's health at a time: it empties at each threshold, then refills as the boss gets angry
-    const seg = p.ph === 2 ? 125 : 100, lower = [225, 125, 0][p.ph];
+    const seg = p.ph === 2 ? 150 : 100, lower = [250, 150, 0][p.ph];
     w = Math.max(0, Math.min(1, (p.hp - lower) / seg)) * 100;
     if(p.anger >= 0 && p.anger < .6 && p.hp > 0) w = 0;
   }
@@ -2207,9 +2208,9 @@ function spBubble(g, s){
   g.textBaseline = 'alphabetic';
 }
 let spTetCounter = 0, spTetSeen = 0, spTetCache = {};
-function spPhase(P){ return P.hp <= 125 ? 2 : P.hp <= 225 ? 1 : 0; }
-// crossing 2/3 or 1/3 health: boss gets angry; at 1/3 the attack cooldown drops from 10s to 5s (pending timer is shortened too)
-function spPhaseCheck(s, P){ const ph = spPhase(P); if(ph > P.ph){ P.ph = ph; P.anger = 0; if(ph === 2) s.next = Math.min(s.next, s.t + 5); } }
+function spPhase(P){ return P.hp <= 150 ? 2 : P.hp <= 250 ? 1 : 0; }
+// crossing 2/3 or 1/3 health: boss gets angry; at 1/3 the attack cooldown drops from 10s to 4s (pending timer is shortened too)
+function spPhaseCheck(s, P){ const ph = spPhase(P); if(ph > P.ph){ P.ph = ph; P.anger = 0; if(ph === 2) s.next = Math.min(s.next, s.t + 4); } }
 function spTetStars(name){
   if(spTetCache[name]) return spTetCache[name];
   const cells = TETROMINOES[name], has = (r, c) => cells.some(o => o[0] === r && o[1] === c), S = 56;
@@ -2260,7 +2261,7 @@ function spShapeOk(name){
   return false;
 }
 function spOnView(v){ const t = v.tet; if(t && t.id !== spTetSeen){ spTetSeen = t.id; if(spMode && !boardLocked) resetBoard(); } }
-function spPud(){ return {x: SP_W / 2, y: -60, ty: 70, on: false, hp: 325, max: 325, age: 0, flash: 0, dead: -1, ang: -Math.PI / 2, flee: null, ph: 0, anger: -1, rs: 1, rdir: 1, rtrav: 0, rx: 180 + Math.random() * 2320, wf: -1, wfd: false}; }
+function spPud(){ return {x: SP_W / 2, y: -60, ty: 70, on: false, hp: 350, max: 350, age: 0, flash: 0, dead: -1, ang: -Math.PI / 2, flee: null, ph: 0, anger: -1, rs: 1, rdir: 1, rtrav: 0, rx: 180 + Math.random() * 2320, wf: -1, wfd: false}; }
 // Boss hit shape: the sprite's visible body is short on top and round-ish on the bottom, so the top is much tighter than the old 111px circle
 function spPudHit(p, x, y, pad){
   const dx = x - p.x, dy = y - p.y, rx = 110 + pad, ry = (dy < 0 ? 62 : 88) + pad;
@@ -2341,14 +2342,14 @@ function spFresh(color, boss){
 function spEvent(){
   const s = sp, sh = s.ship;
   if(s.boss && !s.edge){ // edge spikes: 20% chance, 30% once the boss is at 1/3 health
-    const P = s.pud, low = !!(P && P.dead < 0 && P.hp <= 125);
+    const P = s.pud, low = !!(P && P.dead < 0 && P.hp <= 150);
     if(Math.random() < (low ? .3 : .2)){
       const ds = {left: sh.x, right: SP_W - sh.x, top: sh.y, bottom: SP_H - sh.y};
       s.edge = {side: Object.keys(ds).reduce((a, b) => ds[b] < ds[a] ? b : a), t: 0};
       return;
     }
   }
-  const half = !!(s.pud && s.pud.dead < 0 && s.pud.hp <= 225); // boss phase 2 (2/3 health)
+  const half = !!(s.pud && s.pud.dead < 0 && s.pud.hp <= 250); // boss phase 2 (2/3 health)
   let k = Math.floor(Math.random() * (half ? 5 : 4));
   if(k === 4 && s.tet) k = Math.floor(Math.random() * 4);
   if(k === 4){ // phase 2+: star-outlined tetris piece, Player 2 has 5s to submit it
@@ -2416,7 +2417,7 @@ function spStep(dt){
   }
   s.t += dt; if(s.bossT !== undefined) s.bossT += dt;
   spPudStep(s.pud, dt);
-  if(s.t >= s.next){ const P = s.pud; s.next += (P && P.dead < 0 && P.hp <= 125) ? 5 : 10; spEvent(); }
+  if(s.t >= s.next){ const P = s.pud; s.next += (P && P.dead < 0 && P.hp <= 150) ? 4 : 10; spEvent(); }
   for(const e of s.statics){
     e.ch += dt; e.age += dt;
     if(e.vx !== undefined){ // phase-2 chargers bounce like the dvd logo
@@ -2467,7 +2468,7 @@ function spSfx(s){
   if(cur.tet && cur.tet !== pr.tet) SFX.tetWarn();
   if(cur.td && !pr.td) SFX.tetOk();
   if(cur.pud && !pr.pud){ SFX.bossIn(); MUS.play(5); }
-  if(cur.pf && !pr.pf) SFX.bossHit();
+  if(cur.pf && !pr.pf) SFX.bossHit(P && P.hp > 0 && P.hp <= 50 ? (50 - P.hp) / 49 : 0); // last 50 health: gradually more intense
   if(cur.pa && !pr.pa) SFX.bossRoar();
   if(cur.pw && !pr.pw) SFX.sparkle();
   if(cur.pd && !pr.pd){ SFX.bossDie(); MUS.fadeOut(); }
