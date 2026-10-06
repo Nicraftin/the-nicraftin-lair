@@ -2484,14 +2484,23 @@ function spSfx(s){
     setTimeout(() => { if(ok) SFX.right(); else SFX.wrong(); }, (n - 1) * 300 + 350);
   }
 }
-let spFxOut = null, spFxIn = null, spDread = 0, spDreadNow = 0, spDreadBg = -1;
+let spFxOut = null, spFxIn = null, spDread = 0, spDreadNow = 0, spDreadBg = -1, spDeadFlash = false, spDeadReset = false, spGlowK = -1;
 // last 50 health: page darkens to black, fades back out as soon as a player dies, stays black once the boss is dead
 function spDreadStep(s){
   if(finStarted) return;
   const now = performance.now(), dt = spDreadNow ? Math.min(.1, (now - spDreadNow) / 1000) : 0; spDreadNow = now;
   const P = s.boss ? s.pud : null; let tg = 0;
+  if(!P || P.dead < 0) spDeadFlash = false;
   if(P){
-    if(P.dead >= 0) tg = 1;
+    if(P.dead >= 0){
+      if(!spDeadFlash){ // boss just died: white flash, and while the screen is fully white the background goes back to normal
+        spDeadFlash = true; spDeadReset = false;
+        const fl = document.createElement('div'); fl.id = 'fin-flash'; document.body.appendChild(fl);
+        fl.animate([{opacity:0}, {opacity:1, offset:.12}, {opacity:1, offset:.3}, {opacity:0}], {duration:1400, easing:'linear'}).onfinish = () => fl.remove();
+        setTimeout(() => { spDeadReset = true; spDread = 0; spDreadBg = 0; if(!finStarted) document.body.style.backgroundColor = ''; }, 250);
+      }
+      tg = spDeadReset ? 0 : 1;
+    }
     else if(!s.dying && !s.leaving && P.hp > 0 && P.hp <= 50) tg = (50 - P.hp) / 49;
   }
   const rate = tg < spDread ? 3 : 1.5;
@@ -2501,6 +2510,10 @@ function spDreadStep(s){
 }
 function spBossFx(g, s){
   spDreadStep(s);
+  if(spFxIn){ // red edge glow grows slowly through the last 50 health
+    const gk = Math.round(spDread * 100) / 100;
+    if(gk !== spGlowK){ spGlowK = gk; spFxIn.style.boxShadow = gk > 0 ? 'inset 0 0 ' + (70 + gk * 70) + 'px ' + (8 + gk * 24) + 'px rgba(255,45,70,' + (.6 + gk * .4) + '), inset 0 0 ' + (180 + gk * 180) + 'px ' + (30 + gk * 70) + 'px rgba(255,45,70,' + (.28 + gk * .5) + ')' : ''; }
+  }
   if(!spFxOut){ spFxOut = document.createElement('div'); spFxOut.id = 'sp-fx-out'; spFxIn = document.createElement('div'); spFxIn.id = 'sp-fx-in'; document.body.appendChild(spFxOut); document.body.appendChild(spFxIn); }
   const P = s.pud, alive = !!(s.boss && P && P.dead < 0 && !s.dying && !s.leaving && !finStarted), ph = alive ? spPhase(P) : 0;
   spFxOut.classList.toggle('on', ph >= 1); spFxIn.classList.toggle('on', ph >= 2);
