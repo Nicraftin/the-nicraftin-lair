@@ -2176,6 +2176,11 @@ function spTitle(id, s){
     w = Math.max(0, Math.min(1, (p.hp - lower) / seg)) * 100;
     if(p.anger >= 0 && p.anger < .6 && p.hp > 0) w = 0;
   }
+  const dk = Math.round(spDread * 200) / 200;
+  if(hp._dk !== dk){
+    hp._dk = dk; const mx = (a, b) => Math.round(a + (b - a) * dk);
+    hp.firstChild.style.background = dk > 0 ? 'linear-gradient(90deg,rgb(' + mx(201, 176) + ',' + mx(105, 14) + ',' + mx(31, 34) + '),rgb(' + mx(255, 255) + ',' + mx(179, 36) + ',' + mx(71, 36) + '))' : '';
+  }
   if(hp._w !== w){ hp.classList.toggle('filling', w > (hp._w || 0)); hp._w = w; hp.firstChild.style.width = w + '%'; }
   const d = s.deaths || 0, m = (curLang === 'pt' ? SP_MSG_PT : SP_MSG)[d];
   const t = m === undefined ? d + ' ' + T('deaths') : (typeof m === 'function' ? m() : m);
@@ -2312,7 +2317,8 @@ function spPudDraw(g, p, ship, T){
   const ig = g.createRadialGradient(0, -4, 4, 0, -4, 40); ig.addColorStop(0, '#eb7f10'); ig.addColorStop(1, '#b8560c');
   g.fillStyle = ig; g.fill();
   g.fillStyle = 'rgba(255,214,140,.45)'; g.beginPath(); g.ellipse(-8, -8, 10, 2.5, -.2, 0, Math.PI * 2); g.fill();
-  if(ak > 0){ body(); g.fillStyle = 'rgba(255,32,32,' + ((.5 + .1 * Math.sin(T * 24)) * ak) + ')'; g.fill(); }
+  const pk = p.dead >= 0 ? 1 : (p.hp > 0 && p.hp <= 50 ? (50 - p.hp) / 49 : 0), rk = Math.max(ak, pk);
+  if(rk > 0){ body(); g.fillStyle = 'rgba(255,32,32,' + ((.5 + .1 * Math.sin(T * 24)) * rk) + ')'; g.fill(); }
   const bl = (T % 3.3) < .12 ? .15 : 1;
   // Gaze: converted into the face's own (bobbing / wobbling / 3x scaled) space, so it stays exact. Both pupils share one direction
   // (parallel gaze), so they always point at the ship and never cross to look at each other.
@@ -2478,8 +2484,23 @@ function spSfx(s){
     setTimeout(() => { if(ok) SFX.right(); else SFX.wrong(); }, (n - 1) * 300 + 350);
   }
 }
-let spFxOut = null, spFxIn = null;
+let spFxOut = null, spFxIn = null, spDread = 0, spDreadNow = 0, spDreadBg = -1;
+// last 50 health: page darkens to black, fades back out as soon as a player dies, stays black once the boss is dead
+function spDreadStep(s){
+  if(finStarted) return;
+  const now = performance.now(), dt = spDreadNow ? Math.min(.1, (now - spDreadNow) / 1000) : 0; spDreadNow = now;
+  const P = s.boss ? s.pud : null; let tg = 0;
+  if(P){
+    if(P.dead >= 0) tg = 1;
+    else if(!s.dying && !s.leaving && P.hp > 0 && P.hp <= 50) tg = (50 - P.hp) / 49;
+  }
+  const rate = tg < spDread ? 3 : 1.5;
+  spDread = spDread < tg ? Math.min(tg, spDread + rate * dt) : Math.max(tg, spDread - rate * dt);
+  const q = Math.round(spDread * 500) / 500;
+  if(q !== spDreadBg){ spDreadBg = q; document.body.style.backgroundColor = q > 0 ? 'color-mix(in srgb, var(--bg) ' + ((1 - q) * 100) + '%, #000)' : ''; }
+}
 function spBossFx(g, s){
+  spDreadStep(s);
   if(!spFxOut){ spFxOut = document.createElement('div'); spFxOut.id = 'sp-fx-out'; spFxIn = document.createElement('div'); spFxIn.id = 'sp-fx-in'; document.body.appendChild(spFxOut); document.body.appendChild(spFxIn); }
   const P = s.pud, alive = !!(s.boss && P && P.dead < 0 && !s.dying && !s.leaving && !finStarted), ph = alive ? spPhase(P) : 0;
   spFxOut.classList.toggle('on', ph >= 1); spFxIn.classList.toggle('on', ph >= 2);
