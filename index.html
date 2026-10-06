@@ -251,9 +251,12 @@ body:has(#screen-choose.active) #title-bg{display:block;}
 #screen-choose .big-btn{background:linear-gradient(135deg,#5865f2,#8a5cf0); box-shadow:0 6px 20px rgba(88,101,242,.45);}
 #screen-choose .err{min-height:1.2em;}
 @media (prefers-reduced-motion: reduce){ #title-h .tl{animation:none;} }
+#fade-black{position:fixed; inset:0; background:#000; z-index:99999; pointer-events:none; animation:fadeBlack 2s ease-out forwards;}
+@keyframes fadeBlack{from{opacity:1;}to{opacity:0; visibility:hidden;}}
 </style>
 </head>
 <body>
+<div id="fade-black"></div>
 
 <div id="title-bg"><canvas id="title-bg-c"></canvas></div>
 
@@ -468,7 +471,7 @@ let puzzle = null;
 let progress = [];
 
 const $ = id => document.getElementById(id);
-function show(id){ document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); $(id).classList.add('active'); }
+function show(id){ if(id !== 'screen-choose' && MUS.menu()) MUS.fadeOut(); document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); $(id).classList.add('active'); }
 function makeCode(){ return Array.from({length:4}, ()=>ALPHA[Math.floor(Math.random()*ALPHA.length)]).join(''); }
 
 // ---------- SFX engine (WebAudio, fully synthesized: no audio files) ----------
@@ -682,8 +685,8 @@ const SFX = (() => {
 
 // ---------- Music (mus1-mus5.mp3 next to this file; missing files just play nothing) ----------
 const MUS = (() => {
-  const FILES = {1:'mus1.mp3', 2:'mus2.mp3', 3:'mus3.mp3', 4:'mus4.mp3', 5:'mus5.mp3'}, LOOP = {4:1, 5:1};
-  let cur = null, want = 0, vol = .3, tok = 0, pend = 0, endT = 0, played4 = false, ac = null;
+  const FILES = {0:'mus0.mp3', 1:'mus1.mp3', 2:'mus2.mp3', 3:'mus3.mp3', 4:'mus4.mp3', 5:'mus5.mp3'}, LOOP = {0:1, 4:1, 5:1};
+  let cur = null, want = -1, vol = .3, tok = 0, pend = 0, endT = 0, played4 = false, ac = null;
   const bufs = {};
   function ctx(){ if(!ac){ const C = window.AudioContext || window.webkitAudioContext; ac = new C(); } if(ac.state === 'suspended') ac.resume(); return ac; }
   function loadBuf(n){
@@ -707,7 +710,7 @@ const MUS = (() => {
     });
     return w;
   }
-  try{ loadBuf(4).catch(() => {}); loadBuf(5).catch(() => {}); }catch(e){}
+  try{ loadBuf(0).catch(() => {}); loadBuf(4).catch(() => {}); loadBuf(5).catch(() => {}); }catch(e){}
   function fadeIn(a, ms){
     const t0 = performance.now();
     const id = setInterval(() => {
@@ -727,7 +730,7 @@ const MUS = (() => {
   }
   function start(n){
     if(LOOP[n]){
-      const first = n === 4 && !played4; if(first) played4 = true;
+      const first = n === 0 || (n === 4 && !played4); if(n === 4) played4 = true;
       const a = loopTrack(n, first ? () => { if(cur === a) fadeIn(a, 3000); } : null);
       if(first) a.volume = 0;
       cur = a; return;
@@ -746,11 +749,13 @@ const MUS = (() => {
       if(old && !old.paused && !old.ended) fade(old, 1500, go); else go();
     },
     fadeOut(){
-      want = 0; tok++; if(restoring) pend = 0; const old = cur; cur = null;
+      want = -1; tok++; if(restoring) pend = 0; const old = cur; cur = null;
       if(old && !old.paused && !old.ended) fade(old, 2500);
     },
     replay(){ if(!restoring && cur && cur.ended && want >= 1 && want <= 3 && endT && Date.now() - endT >= 300000){ endT = 0; start(want); } },
     flush(){ if(pend){ const n = pend; pend = 0; this.play(n); } },
+    menu(){ return want === 0; },
+    unlock(){ const was = !ac || ac.state !== 'running'; ctx(); if(was && want === 0 && cur){ try{ cur.volume = 0; }catch(e){} fadeIn(cur, 3000); } },
     setVol(v){
       vol = v;
       if(cur){ try{ cur.volume = v; }catch(e){} }
@@ -758,6 +763,8 @@ const MUS = (() => {
   };
 })();
 setInterval(() => MUS.replay(), 5000);
+MUS.play(0);
+['pointerdown','keydown','touchstart'].forEach(ev => window.addEventListener(ev, function f(){ window.removeEventListener(ev, f, true); MUS.unlock(); }, true));
 function toggleSlider(id){ $(id).classList.toggle('open'); }
 function setMusicVol(v){ MUS.setVol(v / 100); $('mus-btn').classList.toggle('muted', +v === 0); }
 function setSfxVol(v){ SFX.setVol(v / 100); $('sfx-btn').classList.toggle('muted', +v === 0); }
@@ -792,9 +799,9 @@ const I18N = {
   rcerrto: ["Could not connect — check the code.", "Não deu pra conectar — verifique o código."],
   rcerrpeer: ["Could not connect — check the code.", "Não deu pra conectar — verifique o código."],
   infowelcome: ["Welcome to the Nicraftin Lair!", "Seja bem-vindo à Toca do Nicraftin"],
-  infop1: ["Hop on a voice call with a friend and try to beat this escape room as fast as you can.\nCommunication is key, you will need to share information with each other constantly.\nOnly talk though, because sending images or sharing your screen is not allowed.\nThe expected time of completion is between 2 and 3 hours, progress doesn't save.", "Entre numa chamada de voz com um amigo e tente completar essa escape room o mais rápido possível.\nComunicação é a chave, você vai precisar compartilhar informações com seu amigo constantemente.\nMas apenas por voz, pois mandar imagens ou passar tela não é permitido.\nO tempo estimado para completar o jogo é de 2 a 3 horas, o progresso não salva"],
+  infop1: ["Hop on a voice call with a friend and try to beat this escape room as fast as you can.\nCommunication is key, you will need to share information with each other constantly.\nOnly talk though, because sending images or sharing your screen is not allowed.\nThe expected time of completion is between 2 and 3 hours, progress doesn't save.", "Entre numa chamada de voz com um amigo e tente completar o jogo o mais rápido possível.\nComunicação é chave, você vai precisar compartilhar informações constantemente.\nMas apenas por voz, pois mandar imagens ou passar tela não é permitido.\nO tempo estimado para completar o jogo é de 2 a 3 horas, o progresso não salva"],
   infodisc: ["DISCLAIMER:", "AVISO:"],
-  infop2: ["The game's code, visual art and sound effects were made with the help of AI.\nBUT, all of the songs, text and game design were fully human made.\nI'm sorry if that's a deal breaker, but this was only intended for my close friends.\nWith that being said, I hope you enjoy it. Good luck!", "O código, arte visual e efeitos sonoros do jogo foram feitos com ajuda de IA.\nMAS, todas as músicas, texto e design de fases foram feitos por mim sem nenhuma ajuda de IA.\nDesculpa se isso é um ponto não negociável para você, esse jogo foi apenas feito para amigos próximos.\nDito isso, espero que você se divirta. Boa sorte!"],
+  infop2: ["The game's code, visual art and sound effects were made with the help of AI.\nBUT, all of the songs, text and game design were fully human made.\nI'm sorry if that's a deal breaker, but this was only intended for my close friends.\nWith that being said, I hope you enjoy it. Good luck!", "O código, arte visual e efeitos sonoros do jogo foram feitos com ajuda de IA.\nMAS todas as músicas, texto e design de fases foram feitos sem ajuda de IA.\nDesculpa! Esse jogo foi feito para amigos próximos e eu não queria ficar meses fazendo ele.\nDito isso, espero que você se divirta. Boa sorte!"],
   inforeturn: ["Return", "Retornar"],
   ready: ["Ready", "Pronto"],
   waiting: ["Waiting for other player…", "Esperando pelo outro jogador…"],
@@ -809,24 +816,24 @@ const I18N = {
   dccodelabel: ["Reconnect code", "Código para reconectar"],
   dccode: ["CODE", "ABCD"],
   dcreconnect: ["Reconnect", "Reconectar"],
-  finale: ["THE FINALE", "placeholder 1"],
-  bossname: ["NICRAFTIN", "placeholder 2"],
-  sptitle: ["Say three 5-letter words to summon me!", "placeholder 3"],
-  rotccw: ["Rotate counterclockwise", "placeholder 4"],
-  rotcw: ["Rotate clockwise", "placeholder 5"],
-  skip: ["Skip to next puzzle (test)", "placeholder 6"],
-  shortest: ["From shortest to tallest", "placeholder 7"],
-  left: ["Left", "placeholder 8"],
-  jump: ["Jump", "placeholder 9"],
-  right: ["Right", "placeholder 10"],
-  submit: ["Submit", "placeholder 11"],
-  deaths: ["deaths", "placeholder 12"],
-  remaining: ["remaining", "placeholder 13"],
-  stoptimer: ["Stop the timer", "placeholder 14"],
-  congrats: ["Congratulations, you win!", "placeholder 15"],
-  credit1: ["A game made by Nicraftin", "placeholder 16"],
-  credit2: ["Thank you for playing!", "placeholder 17"],
-  youwin: ["You win!", "placeholder 18"]
+  finale: ["THE FINALE", "O FINALE"],
+  bossname: ["NICRAFTIN", "NICRAFTIN"],
+  sptitle: ["Say three 5-letter words to summon me!", "Diga três palavras de 5 letras para me sumonar"],
+  rotccw: ["Rotate counterclockwise", "Rotacione no sentido anti-horário"],
+  rotcw: ["Rotate clockwise", "Rotacione no sentido horário"],
+  skip: ["Skip current level", "Pule de fase"],
+  shortest: ["From shortest to tallest", "Do menor ao mais alto"],
+  left: ["Left", "Esquerda"],
+  jump: ["Up", "Cima"],
+  right: ["Right", "Direita"],
+  submit: ["Submit", "Enviar"],
+  deaths: ["deaths", "mortes"],
+  remaining: ["remaining", "restantes"],
+  stoptimer: ["Stop the timer", "Pare o relógio"],
+  congrats: ["Congratulations, you win!", "Parabéns, você venceu!"],
+  credit1: ["A game made by Nicraftin", "Um jogo feito por Nicraftin"],
+  credit2: ["Thank you for playing!", "Obrigado por jogar!"],
+  youwin: ["You win!", "Você venceu!"]
 };
 function T(k){ const e = I18N[k]; return e ? (curLang === 'pt' ? e[1] : e[0]) : k; }
 function applyLang(){
@@ -2015,59 +2022,59 @@ function spShowWords(id, words, leaving){
   }
 }
 const SP_MSG_PT = [
-  "placeholder 19",
-  "placeholder 20",
-  "placeholder 21",
-  "placeholder 22",
-  "placeholder 23",
-  "placeholder 24",
-  "placeholder 25",
-  "placeholder 26",
-  "placeholder 27",
-  "placeholder 28",
-  "placeholder 29",
-  "placeholder 30",
-  "placeholder 31",
-  "placeholder 32",
-  "placeholder 33",
-  "placeholder 34",
-  "placeholder 35",
-  "placeholder 36",
-  "placeholder 37",
-  "placeholder 38",
-  "placeholder 39",
-  "placeholder 40",
-  "placeholder 41",
-  "placeholder 42",
-  "placeholder 43",
-  "placeholder 44",
-  "placeholder 45",
-  "placeholder 46",
-  "placeholder 47",
-  "placeholder 48",
-  "placeholder 49",
-  "placeholder 50",
-  "placeholder 51",
-  "placeholder 52",
-  "placeholder 53",
-  "placeholder 54",
-  "placeholder 55",
-  "placeholder 56",
-  "placeholder 57",
-  "placeholder 58",
-  "placeholder 59",
-  "placeholder 60",
-  "placeholder 61",
-  "placeholder 62",
-  "placeholder 63",
-  "placeholder 64",
-  "placeholder 65",
-  "placeholder 66",
-  "placeholder 67",
-  "placeholder 68",
-  "placeholder 69",
-  "placeholder 70",
-  "placeholder 71"
+  "Ent vc quer x1? Cai dentro",
+  "Deu a lógica, quer mais uma?",
+  "2 mortes, uma pra cada um, pode dividir",
+  "Nossa, 3 mortes e quer mais?",
+  "Agora 4 e subindo",
+  "Quer uma mãozinha? Como q eu conto 6 mortes com só uma?",
+  "Pera, vcs tem 4 mãos pra contar? Tentem usá-las",
+  "Eu mandava 7-1, mas faltou o 1",
+  "8 mortes? Vamos virar esse número 90 graus",
+  "9 mortes, falta só uma",
+  "Ae! 10 mortes!",
+  "Diferente de um certo esqueleto, sei contar 11 mortes",
+  "Ah, entendi! Vcs tavam esperando a tentativa 13",
+  "E eu achei que 13 era seu número da sorte...",
+  "14 me lembra de vcs, QUA QUA QUAtorze",
+  "Já tava podendo tryhardar 15 vidas atrás",
+  "16? já pode ser testemunha desse crime de gameplay",
+  "17 mortes, como tira do ez?",
+  "18? já pode ir pro detran de naves espaciais",
+  "19 mortes, confio que vcs morrem mais uma",
+  "Parabéns! Você chegou em 20 mortes!",
+  "Eu dei parabéns, podia ter parado em 20",
+  "22? Eu voto em vcs passarem o controle dessa nave",
+  "Devia começar a cobrar por hora dps dessas 23 mortes",
+  "Sabe oq é mais engraçado que 24 mortes?",
+  "25 mortes! kkkkkkkkk",
+  "Já tava podendo tryhardar 26 vidas atrás",
+    () => 'Lembra q ia cobrar por hora? ' + $('game-timer').textContent + ' vai ser 13500 vbucks',
+  "Sério, 28 mortes é coisa de passar o pix",
+  "29 mortes, só mais uma outra vez",
+  "30 mortes! Cadê a alegria?",
+  "Ok, sem meme, como q vcs morreram 31 vezes?",
+  "Meio pack de mortes",
+  "Ok, sem meme, como q vcs morreram 33 vezes?",
+  "Vcs tão morrendo de propósito né? 34 mortes",
+  "Vcs queriam ver o diálogo de 35 mortes, né?",
+  "O dIáLoGo De 36 MoRtEs é MeU fAvOrItO, vcs diram",
+  "37 mortes e n tem NINGUÉM pra passar o controle?",
+  "38? passa o controle pra um gato, um fungo, sla",
+  "39 mortes, só mais uminha pra nova dezena",
+  "40 mortes! a dezena do patinho",
+  "41, adoro começar com QUA cada vez",
+  "42, mas a vida nessa nave continua sem sentido",
+  "43 mortes, toma uma água, dá uma andada, respira",
+  "44, quaraquaqua!",
+  "45 mortes, tô começando a me sentir mal por vcs",
+  "46 a 0",
+  "47 mortes, nem sei mais oq falar",
+  "48, 3 packs da bola de neve que isso virou",
+  "49 mortes, quem morreu 49 morre 50",
+  "50 mortes, metade do caminho pra 100",
+  "Ok, cansei de entreter vcs dps de 51 mortes",
+  "Só vou dizer... 52 mortes"
 ];
 const SP_MSG = [
   "So you've chosen death...",
